@@ -59,7 +59,14 @@ class Choice {
       ...this.choices.map((choice) => {
         return choice.renderSummary()
           .click(() => {
-            $(chooser).replaceWith(choice.render());
+            let replacement = choice.render();
+            $(chooser).replaceWith(replacement);
+
+            let treeChildren = findTreeNodeFor(chooser).children('.children');
+            for(let newChild of replacement) {
+              treeChildren.append(
+                createTreeNodeFor(newChild));
+            }
           });
       }));
     chooser.append(choices)
@@ -150,6 +157,9 @@ function textInput() {
   return new TextInput(...arguments);
 }
 
+
+
+
 let grammar = { };
 
 function findSymbol(symbolName) {
@@ -159,4 +169,26 @@ function findSymbol(symbolName) {
     grammar[symbolName] = result;
   }
   return result;
+}
+
+
+
+var treeNodeId = 0;
+
+function createTreeNodeFor(grammarElem) {
+  let text = $(grammarElem).find('.header').text() || $(grammarElem).text();
+
+  let treeNode = elem("div", "tree-node",
+    elem("div", "label", text),
+    elem("div", "children"));
+  $(grammarElem).attr('tree-node-id', treeNodeId);
+  $(treeNode).attr('id', 'tree-node-' + treeNodeId);
+
+  treeNodeId++;
+
+  return treeNode;
+}
+
+function findTreeNodeFor(grammarElem) {
+  return $('#tree-node-' + $(grammarElem).attr('tree-node-id'));
 }
