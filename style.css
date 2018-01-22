@@ -14,11 +14,12 @@ html, body {
 }
 
 .workspace {
-    height: 70%;
+    width: 60%;
+    height: 100%;
+    float: left;
 }
 
 .tree {
-    height: 30%;
     outline: 3px solid #ccc;
 }
 
@@ -128,4 +129,12 @@ html, body {
     border: none;
     width: 5em;
     margin: 0.2em 0;
+}
+
+.tree {
+    font-size: 80%;
+}
+
+.tree-node {
+    padding-left: 1em;
 }

@@ -1063,9 +1063,9 @@ grammar = {
   CastExpression: [
      [literal('('), 'PrimitiveType', literal(')'),
               'UnaryExpression'],
-      [literal('('), 'ReferenceType', multiple('AdditionalBound'), literal(')'),
+     [literal('('), 'ReferenceType', multiple('AdditionalBound'), literal(')'),
               'UnaryExpressionNotPlusMinus'],
-      [literal('('), 'ReferenceType', multiple('AdditionalBound'), literal(')'),
+     [literal('('), 'ReferenceType', multiple('AdditionalBound'), literal(')'),
               'LambdaExpression']
   ],
   ConstantExpression: [
@@ -1076,5 +1076,7 @@ grammar = {
 console.log("Done.");
 
 $(() => {
-  $('.workspace').empty().append(findSymbol('Statement').render());
+  let startElem = findSymbol('Statement').render();
+  $('.workspace').empty().append(startElem);
+  $('.tree').empty().append(createTreeNodeFor(startElem));
 });
