@@ -19,7 +19,7 @@ class Literal {
   }
 }
 
-class Substitution {
+class Sequence {
   constructor(children) {
     this.children = children;
   }
@@ -46,7 +46,7 @@ class Substitution {
 class Choice {
   constructor(name, choices, cssClass) {
     this.name = name;
-    this.choices = choices.map((choice) => { return new Substitution(choice) });
+    this.choices = choices.map((choice) => { return new Sequence(choice) });
     this.cssClass = cssClass;
   }
 
