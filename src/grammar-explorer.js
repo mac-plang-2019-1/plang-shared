@@ -208,9 +208,10 @@ class TextInput extends GrammarNode {
 // –––––– Grammar ––––––
 
 class Grammar {
-  constructor({ name, startSymbols }) {
+  constructor({ name, startSymbols, docLinks }) {
     this.name = name;
     this.startSymbols = startSymbols;
+    this.docLinks = docLinks;
   }
 
   literal(text) {
@@ -268,6 +269,15 @@ class Grammar {
   }
 
   show() {
+    document.title = "Grammar Explorer: " + this.name;
+
+    $('.grammar-title').text(document.title);
+    $('.doc-links').empty().append(
+      this.docLinks.map((link) =>
+        elem("a", "doc-link", link.name).attr('href', link.url)
+      )
+    );
+
     let startChooser = new Choice({
       grammar: this,
       name: "Choose starting symbol",
@@ -277,8 +287,11 @@ class Grammar {
     });
 
     let startElem = startChooser.renderWithTreeNode().addClass("start");
-    $('.workspace').empty().append(startElem);
-    $('.tree').empty().append(GrammarNode.treeNodeFor(startElem));
+    $('.workspace-content').empty().append(startElem);
+
+    let treeNode = GrammarNode.treeNodeFor(startElem);
+    treeNode.hide();  // Not a real grammar symbol (yet)
+    $('.tree-content').empty().append(treeNode);
   }
 }
 

@@ -2,6 +2,12 @@
 
 let g = new Grammar({
   name: "Java",
+  docLinks: [
+    {
+      name: "Java grammar reference",
+      url: "https://docs.oracle.com/javase/specs/jls/se9/html/jls-19.html"
+    }
+  ],
   startSymbols: [
     'CompilationUnit',
     'Statement',
