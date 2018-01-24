@@ -40,6 +40,15 @@ html, body {
     cursor: pointer;
 }
 
+.start .header .nonterminal {
+    background: white;
+    color: black;
+    border: 0.5px solid #44c;
+    font-size: 120%;
+    font-weight: 500;
+    padding: 0.4em 0.6em;
+}
+
 .nonterminal.optional:before,
 .nonterminal.optional:after,
 .nonterminal.multiple:before,
@@ -83,12 +92,16 @@ html, body {
     padding: 0;
 }
 
+.chooser .choicescontainer {
+    position: absolute;
+}
+
 .chooser .choices {
     display: none;
     position: relative;
     top: 1em;
     left: -0.2em;
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.9);
     margin: 0.4em;
     border-radius: 0.2em;
     box-shadow: 0 0.2em 0.4em rgba(0, 0, 0, 0.3);
@@ -103,6 +116,14 @@ html, body {
     left: 0.25em;
     font-size: 125%;
     height: 0;
+}
+
+.start .choices {
+    top: -0.6em;
+}
+
+.start .choices:before {
+    display: none;
 }
 
 .chooser .choices .substitution {

@@ -1076,7 +1076,17 @@ grammar = {
 console.log("Done.");
 
 $(() => {
-  let startElem = findSymbol('Statement').renderWithTreeNode();
+  let startChooser = new Choice(
+    "Choose starting symbol",
+    [
+      ['CompilationUnit'],
+      ['Statement'],
+      ['Expression']
+    ],
+    "nonterminal",
+    true);
+
+  let startElem = startChooser.renderWithTreeNode().addClass("start");
   $('.workspace').empty().append(startElem);
   $('.tree').empty().append(GrammarNode.treeNodeFor(startElem));
 });
