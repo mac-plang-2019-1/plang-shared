@@ -146,6 +146,7 @@ class Repetition extends GrammarNode {
   }
 }
 
+
 class Nothing extends GrammarNode {
   render() {
     return $([]);
