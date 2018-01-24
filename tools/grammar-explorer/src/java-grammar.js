@@ -1,18 +1,27 @@
-console.log("Loading grammar...");
-grammar = {
+(() => {
+
+let g = new Grammar({
+  startSymbols: [
+    'CompilationUnit',
+    'Statement',
+    'Expression'
+  ]
+});
+
+g.productions = {
   Identifier: [
      ['IdentifierChars']
   ],
   IdentifierChars: [
-     [textInput("identifier", "[A-Za-z_][A-Za-z0-9_]+")]
+     [g.textInput("identifier", "[A-Za-z_][A-Za-z0-9_]+")]
   ],
 
-  IntegerLiteral:       [[textInput("integer")]],
-  FloatingPointLiteral: [[textInput("floating")]],
-  BooleanLiteral:       [[textInput("boolean")]],
-  CharacterLiteral:     [[textInput("character")]],
-  StringLiteral:        [[textInput("string")]],
-  NullLiteral:          [[literal("null")]],
+  IntegerLiteral:       [[g.textInput("integer")]],
+  FloatingPointLiteral: [[g.textInput("floating")]],
+  BooleanLiteral:       [[g.textInput("boolean")]],
+  CharacterLiteral:     [[g.textInput("character")]],
+  StringLiteral:        [[g.textInput("string")]],
+  NullLiteral:          [[g.literal("null")]],
 
   Literal: [
      ['IntegerLiteral'],
@@ -27,23 +36,23 @@ grammar = {
      ['ReferenceType']
   ],
   PrimitiveType: [
-     [multiple('Annotation'), 'NumericType'],
-     [multiple('Annotation'), literal('boolean')]
+     [g.multiple('Annotation'), 'NumericType'],
+     [g.multiple('Annotation'), g.literal('boolean')]
   ],
   NumericType: [
      ['IntegralType'],
      ['FloatingPointType']
   ],
   IntegralType: [
-     [literal('byte')],
-     [literal('short')],
-     [literal('int')],
-     [literal('long')],
-     [literal('char')]
+     [g.literal('byte')],
+     [g.literal('short')],
+     [g.literal('int')],
+     [g.literal('long')],
+     [g.literal('char')]
   ],
   FloatingPointType: [
-     [literal('float')],
-     [literal('double')]
+     [g.literal('float')],
+     [g.literal('double')]
   ],
   ReferenceType: [
      ['ClassOrInterfaceType'],
@@ -55,19 +64,19 @@ grammar = {
      ['InterfaceType']
   ],
   ClassType: [
-     [multiple('Annotation'), 
+     [g.multiple('Annotation'), 
               'Identifier',
-              optional('TypeArguments')],
-     ['ClassOrInterfaceType', literal('.'), 
-              multiple('Annotation'),
+              g.optional('TypeArguments')],
+     ['ClassOrInterfaceType', g.literal('.'), 
+              g.multiple('Annotation'),
               'Identifier', 
-              optional('TypeArguments')]
+              g.optional('TypeArguments')]
   ],
   InterfaceType: [
      ['ClassType']
   ],
   TypeVariable: [
-     [multiple('Annotation'), 'Identifier']
+     [g.multiple('Annotation'), 'Identifier']
   ],
   ArrayType: [
      ['PrimitiveType', 'Dims'],
@@ -75,85 +84,85 @@ grammar = {
      ['TypeVariable', 'Dims']
   ],
   Dims: [
-     [multiple('Annotation'), literal('['), literal(']'), multiple(multiple('Annotation'), literal('['), literal(']'))]
+     [g.multiple('Annotation'), g.literal('['), g.literal(']'), g.multiple(g.multiple('Annotation'), g.literal('['), g.literal(']'))]
   ],
   TypeParameter: [
-     [multiple('TypeParameterModifier'),
+     [g.multiple('TypeParameterModifier'),
               'Identifier',
-              optional('TypeBound')]
+              g.optional('TypeBound')]
   ],
   TypeParameterModifier: [
      ['Annotation']
   ],
   TypeBound: [
-     [literal('extends'), 'TypeVariable'],
-     [literal('extends'), 'ClassOrInterfaceType', multiple('AdditionalBound')]
+     [g.literal('extends'), 'TypeVariable'],
+     [g.literal('extends'), 'ClassOrInterfaceType', g.multiple('AdditionalBound')]
   ],
   AdditionalBound: [
-     [literal('&amp;'), 'InterfaceType']
+     [g.literal('&amp;'), 'InterfaceType']
   ],
   TypeArguments: [
-     [literal('&lt;'), 'TypeArgumentList', literal('&gt;')]
+     [g.literal('&lt;'), 'TypeArgumentList', g.literal('&gt;')]
   ],
   TypeArgumentList: [
-     ['TypeArgument', multiple(literal(','), 'TypeArgument')]
+     ['TypeArgument', g.multiple(g.literal(','), 'TypeArgument')]
   ],
   TypeArgument: [
      ['ReferenceType'],
      ['Wildcard']
   ],
   Wildcard: [
-     [multiple('Annotation'), literal('?'), optional('WildcardBounds')]
+     [g.multiple('Annotation'), g.literal('?'), g.optional('WildcardBounds')]
   ],
   WildcardBounds: [
-     [literal('extends'), 'ReferenceType'],
-     [literal('super'), 'ReferenceType']
+     [g.literal('extends'), 'ReferenceType'],
+     [g.literal('super'), 'ReferenceType']
   ],
   ModuleName: [
      ['Identifier'],
-     ['ModuleName', literal('.'), 'Identifier']
+     ['ModuleName', g.literal('.'), 'Identifier']
   ],
   PackageName: [
      ['Identifier'],
-     ['PackageName', literal('.'), 'Identifier']
+     ['PackageName', g.literal('.'), 'Identifier']
   ],
   TypeName: [
      ['Identifier'],
-     ['PackageOrTypeName', literal('.'), 'Identifier']
+     ['PackageOrTypeName', g.literal('.'), 'Identifier']
   ],
   ExpressionName: [
      ['Identifier'],
-     ['AmbiguousName', literal('.'), 'Identifier']
+     ['AmbiguousName', g.literal('.'), 'Identifier']
   ],
   MethodName: [
      ['Identifier']
   ],
   PackageOrTypeName: [
      ['Identifier'],
-     ['PackageOrTypeName', literal('.'), 'Identifier']
+     ['PackageOrTypeName', g.literal('.'), 'Identifier']
   ],
   AmbiguousName: [
      ['Identifier'],
-     ['AmbiguousName', literal('.'), 'Identifier']
+     ['AmbiguousName', g.literal('.'), 'Identifier']
   ],
   CompilationUnit: [
      ['OrdinaryCompilationUnit'],
      ['ModularCompilationUnit']
   ],
   OrdinaryCompilationUnit: [
-     [optional('PackageDeclaration'), 
-              multiple('ImportDeclaration'), 
-              multiple('TypeDeclaration')]
+     [g.optional('PackageDeclaration'), 
+              g.multiple('ImportDeclaration'), 
+              g.multiple('TypeDeclaration')]
   ],
   ModularCompilationUnit: [
-     [multiple('ImportDeclaration'), 
+     [g.multiple('ImportDeclaration'), 
               'ModuleDeclaration']
   ],
   PackageDeclaration: [
-     [multiple('PackageModifier'),
-              literal('package'), 
-              'Identifier', multiple(literal('.'), 'Identifier'),
-              literal(';')]
+     [g.multiple('PackageModifier'),
+              g.literal('package'), 
+              'Identifier', g.multiple(g.literal('.'), 'Identifier'),
+              g.literal(';')]
   ],
   PackageModifier: [
      ['Annotation']
@@ -165,80 +174,80 @@ grammar = {
      ['StaticImportOnDemandDeclaration']
   ],
   SingleTypeImportDeclaration: [
-     [literal('import'), 'TypeName', literal(';')]
+     [g.literal('import'), 'TypeName', g.literal(';')]
   ],
   TypeImportOnDemandDeclaration: [
-     [literal('import'), 'PackageOrTypeName', literal('.'), literal('*'), literal(';')]
+     [g.literal('import'), 'PackageOrTypeName', g.literal('.'), g.literal('*'), g.literal(';')]
   ],
   SingleStaticImportDeclaration: [
-     [literal('import'), literal('static'), 'TypeName', literal('.'), 'Identifier', literal(';')]
+     [g.literal('import'), g.literal('static'), 'TypeName', g.literal('.'), 'Identifier', g.literal(';')]
   ],
   StaticImportOnDemandDeclaration: [
-     [literal('import'), literal('static'), 'TypeName', literal('.'), literal('*'), literal(';')]
+     [g.literal('import'), g.literal('static'), 'TypeName', g.literal('.'), g.literal('*'), g.literal(';')]
   ],
   TypeDeclaration: [
      ['ClassDeclaration'],
      ['InterfaceDeclaration'],
-     [literal(';')]
+     [g.literal(';')]
   ],
   ModuleDeclaration: [
-     [multiple('Annotation'), optional(literal('open')), literal('module'), 
-              'Identifier', multiple(literal('.'), 'Identifier'),
-               literal('{'), 'ModuleDirective', literal('}')]
+     [g.multiple('Annotation'), g.optional(g.literal('open')), g.literal('module'), 
+              'Identifier', g.multiple(g.literal('.'), 'Identifier'),
+               g.literal('{'), 'ModuleDirective', g.literal('}')]
   ],
   ModuleDirective: [
-     [literal('requires'),
-              multiple('RequiresModifier'), 
-              'ModuleName', literal(';')],
-     [literal('exports'), 'PackageName', 
-              optional(literal('to'), 'ModuleName', 
-               multiple(literal(','), 'ModuleName')), literal(';')],
-     [literal('opens'), 'PackageName',
-              optional(literal('to'), 'ModuleName', 
-               multiple(literal(','), 'ModuleName')), literal(';')],
-     [literal('uses'), 'TypeName', literal(';')],
-     [literal('provides'), 'TypeName', 
-              literal('with'), 'TypeName', 
-               multiple(literal(','), 'TypeName'), literal(';')]
+     [g.literal('requires'),
+              g.multiple('RequiresModifier'), 
+              'ModuleName', g.literal(';')],
+     [g.literal('exports'), 'PackageName', 
+              g.optional(g.literal('to'), 'ModuleName', 
+               g.multiple(g.literal(','), 'ModuleName')), g.literal(';')],
+     [g.literal('opens'), 'PackageName',
+              g.optional(g.literal('to'), 'ModuleName', 
+               g.multiple(g.literal(','), 'ModuleName')), g.literal(';')],
+     [g.literal('uses'), 'TypeName', g.literal(';')],
+     [g.literal('provides'), 'TypeName', 
+              g.literal('with'), 'TypeName', 
+              g.multiple(g.literal(','), 'TypeName'), g.literal(';')]
   ],
   RequiresModifier: [
-     [literal('transitive')],
-     [literal('static')]
+     [g.literal('transitive')],
+     [g.literal('static')]
   ],
   ClassDeclaration: [
      ['NormalClassDeclaration'],
      ['EnumDeclaration']
   ],
   NormalClassDeclaration: [
-     [multiple('ClassModifier'),
-              literal('class'), 'Identifier',
-              optional('TypeParameters'),
+     [g.multiple('ClassModifier'),
+              g.literal('class'), 'Identifier',
+              g.optional('TypeParameters'),
               
-              optional('Superclass'),
-              optional('Superinterfaces'),
+              g.optional('Superclass'),
+              g.optional('Superinterfaces'),
               'ClassBody']
   ],
   ClassModifier: [
-     ['Annotation', literal('public'), literal('protected'), literal('private')],
-     [literal('abstract'), literal('static'), literal('final'), literal('strictfp')]
+     ['Annotation', g.literal('public'), g.literal('protected'), g.literal('private')],
+     [g.literal('abstract'), g.literal('static'), g.literal('final'), g.literal('strictfp')]
   ],
   TypeParameters: [
-     [literal('&lt;'), 'TypeParameterList', literal('&gt;')]
+     [g.literal('&lt;'), 'TypeParameterList', g.literal('&gt;')]
   ],
   TypeParameterList: [
-     ['TypeParameter', multiple(literal(','), 'TypeParameter')]
+     ['TypeParameter', g.multiple(g.literal(','), 'TypeParameter')]
   ],
   Superclass: [
-     [literal('extends'), 'ClassType']
+     [g.literal('extends'), 'ClassType']
   ],
   Superinterfaces: [
-     [literal('implements'), 'InterfaceTypeList']
+     [g.literal('implements'), 'InterfaceTypeList']
   ],
   InterfaceTypeList: [
-     ['InterfaceType', multiple(literal(','), 'InterfaceType')]
+     ['InterfaceType', g.multiple(g.literal(','), 'InterfaceType')]
   ],
   ClassBody: [
-     [literal('{'), multiple('ClassBodyDeclaration'), literal('}')]
+     [g.literal('{'), g.multiple('ClassBodyDeclaration'), g.literal('}')]
   ],
   ClassBodyDeclaration: [
      ['ClassMemberDeclaration'],
@@ -251,31 +260,31 @@ grammar = {
      ['MethodDeclaration'],
      ['ClassDeclaration'],
      ['InterfaceDeclaration'],
-     [literal(';')]
+     [g.literal(';')]
   ],
   FieldDeclaration: [
-     [multiple('FieldModifier'),
+     [g.multiple('FieldModifier'),
               'UnannType',
-              'VariableDeclaratorList', literal(';')]
+              'VariableDeclaratorList', g.literal(';')]
   ],
   FieldModifier: [
      ['Annotation'],
-     [literal('public')],
-     [literal('protected')],
-     [literal('private')],
-     [literal('static')],
-     [literal('final')],
-     [literal('transient')],
-     [literal('volatile')]
+     [g.literal('public')],
+     [g.literal('protected')],
+     [g.literal('private')],
+     [g.literal('static')],
+     [g.literal('final')],
+     [g.literal('transient')],
+     [g.literal('volatile')]
   ],
   VariableDeclaratorList: [
-     ['VariableDeclarator', multiple(literal(','), 'VariableDeclarator')]
+     ['VariableDeclarator', g.multiple(g.literal(','), 'VariableDeclarator')]
   ],
   VariableDeclarator: [
-     ['VariableDeclaratorId', optional(literal('='), 'VariableInitializer')]
+     ['VariableDeclaratorId', g.optional(g.literal('='), 'VariableInitializer')]
   ],
   VariableDeclaratorId: [
-     ['Identifier', optional('Dims')]
+     ['Identifier', g.optional('Dims')]
   ],
   VariableInitializer: [
      ['Expression'],
@@ -287,7 +296,7 @@ grammar = {
   ],
   UnannPrimitiveType: [
      ['NumericType'],
-     [literal('boolean')]
+     [g.literal('boolean')]
   ],
   UnannReferenceType: [
      ['UnannClassOrInterfaceType'],
@@ -300,11 +309,11 @@ grammar = {
   ],
   UnannClassType: [
      ['Identifier',
-              optional('TypeArguments')],
-     ['UnannClassOrInterfaceType', literal('.'),
-              multiple('Annotation'),
+              g.optional('TypeArguments')],
+     ['UnannClassOrInterfaceType', g.literal('.'),
+              g.multiple('Annotation'),
               'Identifier',
-              optional('TypeArguments')]
+              g.optional('TypeArguments')]
   ],
   UnannInterfaceType: [
      ['UnannClassType']
@@ -318,68 +327,68 @@ grammar = {
      ['UnannTypeVariable', 'Dims']
   ],
   MethodDeclaration: [
-     [multiple('MethodModifier'), 'MethodHeader', 'MethodBody']
+     [g.multiple('MethodModifier'), 'MethodHeader', 'MethodBody']
   ],
   MethodModifier: [
      ['Annotation'],
-     [literal('public')],
-     [literal('protected')],
-     [literal('private')],
-     [literal('abstract')],
-     [literal('static')],
-     [literal('final')],
-     [literal('synchronized')],
-     [literal('native')],
-     [literal('strictfp')]
+     [g.literal('public')],
+     [g.literal('protected')],
+     [g.literal('private')],
+     [g.literal('abstract')],
+     [g.literal('static')],
+     [g.literal('final')],
+     [g.literal('synchronized')],
+     [g.literal('native')],
+     [g.literal('strictfp')]
   ],
   MethodHeader: [
-     ['Result', 'MethodDeclarator', optional('Throws')],
-     ['TypeParameters', multiple('Annotation'),
-              'Result', 'MethodDeclarator', optional('Throws')]
+     ['Result', 'MethodDeclarator', g.optional('Throws')],
+     ['TypeParameters', g.multiple('Annotation'),
+              'Result', 'MethodDeclarator', g.optional('Throws')]
   ],
   Result: [
      ['UnannType'],
-     [literal('void')]
+     [g.literal('void')]
   ],
   MethodDeclarator: [
      ['Identifier',
-               literal('('), optional('FormalParameterList'), literal(')'),
-               optional('Dims')]
+               g.literal('('), g.optional('FormalParameterList'), g.literal(')'),
+               g.optional('Dims')]
   ],
   FormalParameterList: [
      ['ReceiverParameter'],
-     ['FormalParameters', literal(','), 'LastFormalParameter'],
+     ['FormalParameters', g.literal(','), 'LastFormalParameter'],
      ['LastFormalParameter']
   ],
   FormalParameters: [
-     ['FormalParameter', multiple(literal(','), 'FormalParameter')],
-     ['ReceiverParameter', multiple(literal(','), 'FormalParameter')]
+     ['FormalParameter', g.multiple(g.literal(','), 'FormalParameter')],
+     ['ReceiverParameter', g.multiple(g.literal(','), 'FormalParameter')]
   ],
   FormalParameter: [
-     [multiple('VariableModifier'),
+     [g.multiple('VariableModifier'),
               'UnannType',
               'VariableDeclaratorId']
   ],
   VariableModifier: [
      ['Annotation'],
-     [literal('final')]
+     [g.literal('final')]
   ],
   LastFormalParameter: [
-     [multiple('VariableModifier'),
-              'UnannType', multiple('Annotation'), literal('...'),
+     [g.multiple('VariableModifier'),
+              'UnannType', g.multiple('Annotation'), g.literal('...'),
               'VariableDeclaratorId'],
      ['FormalParameter']
   ],
   ReceiverParameter: [
-     [multiple('Annotation'),
+     [g.multiple('Annotation'),
               'UnannType',
-              optional('Identifier', literal('.')), literal('this')]
+              g.optional('Identifier', g.literal('.')), g.literal('this')]
   ],
   Throws: [
-     [literal('throws'), 'ExceptionTypeList']
+     [g.literal('throws'), 'ExceptionTypeList']
   ],
   ExceptionTypeList: [
-     ['ExceptionType', multiple(literal(','), 'ExceptionType')]
+     ['ExceptionType', g.multiple(g.literal(','), 'ExceptionType')]
   ],
   ExceptionType: [
      ['ClassType'],
@@ -387,162 +396,162 @@ grammar = {
   ],
   MethodBody: [
      ['Block'],
-     [literal(';')]
+     [g.literal(';')]
   ],
   InstanceInitializer: [
      ['Block']
   ],
   StaticInitializer: [
-     [literal('static'), 'Block']
+     [g.literal('static'), 'Block']
   ],
   ConstructorDeclaration: [
-     [multiple('ConstructorModifier'),
+     [g.multiple('ConstructorModifier'),
               'ConstructorDeclarator',
-              optional('Throws'),
+              g.optional('Throws'),
               'ConstructorBody']
   ],
   ConstructorModifier: [
      ['Annotation'],
-     [literal('public')],
-     [literal('protected')],
-     [literal('private')]
+     [g.literal('public')],
+     [g.literal('protected')],
+     [g.literal('private')]
   ],
   ConstructorDeclarator: [
-     [optional('TypeParameters'),
+     [g.optional('TypeParameters'),
               'SimpleTypeName',
-              literal('('), optional('FormalParameterList'), literal(')')]
+              g.literal('('), g.optional('FormalParameterList'), g.literal(')')]
   ],
   SimpleTypeName: [
      ['Identifier']
   ],
   ConstructorBody: [
-     [literal('{'),
-              optional('ExplicitConstructorInvocation'),
-              optional('BlockStatements'),
-              literal('}')]
+     [g.literal('{'),
+              g.optional('ExplicitConstructorInvocation'),
+              g.optional('BlockStatements'),
+              g.literal('}')]
   ],
   ExplicitConstructorInvocation: [
-     [optional('TypeArguments'), literal('this'), literal('('), optional('ArgumentList'), literal(')'), literal(';')],
-     [optional('TypeArguments'), literal('super'), literal('('), optional('ArgumentList'), literal(')'), literal(';')],
-     ['ExpressionName', literal('.'), optional('TypeArguments'), literal('super'), literal('('), optional('ArgumentList'), literal(')'), literal(';')],
-     ['Primary', literal('.'), optional('TypeArguments'), literal('super'), literal('('), optional('ArgumentList'), literal(')'), literal(';')]
+     [g.optional('TypeArguments'), g.literal('this'), g.literal('('), g.optional('ArgumentList'), g.literal(')'), g.literal(';')],
+     [g.optional('TypeArguments'), g.literal('super'), g.literal('('), g.optional('ArgumentList'), g.literal(')'), g.literal(';')],
+     ['ExpressionName', g.literal('.'), g.optional('TypeArguments'), g.literal('super'), g.literal('('), g.optional('ArgumentList'), g.literal(')'), g.literal(';')],
+     ['Primary', g.literal('.'), g.optional('TypeArguments'), g.literal('super'), g.literal('('), g.optional('ArgumentList'), g.literal(')'), g.literal(';')]
   ],
   EnumDeclaration: [
-     [multiple('ClassModifier'),
-              literal('enum'), 'Identifier',
-              optional('Superinterfaces'),
+     [g.multiple('ClassModifier'),
+              g.literal('enum'), 'Identifier',
+              g.optional('Superinterfaces'),
               'EnumBody']
   ],
   EnumBody: [
-     [literal('{'),
-              optional('EnumConstantList'), optional(literal(',')),
-              optional('EnumBodyDeclarations'),
-              literal('}')]
+     [g.literal('{'),
+              g.optional('EnumConstantList'), g.optional(g.literal(',')),
+              g.optional('EnumBodyDeclarations'),
+              g.literal('}')]
   ],
   EnumConstantList: [
-     ['EnumConstant', multiple(literal(','), 'EnumConstant')]
+     ['EnumConstant', g.multiple(g.literal(','), 'EnumConstant')]
   ],
   EnumConstant: [
-     [multiple('EnumConstantModifier'),
+     [g.multiple('EnumConstantModifier'),
               'Identifier',
-              optional(literal('('), 'ArgumentList', literal(')')),
-              optional('ClassBody')]
+              g.optional(g.literal('('), 'ArgumentList', g.literal(')')),
+              g.optional('ClassBody')]
   ],
   EnumConstantModifier: [
      ['Annotation']
   ],
   EnumBodyDeclarations: [
-     [literal(';'), multiple('ClassBodyDeclaration')]
+     [g.literal(';'), g.multiple('ClassBodyDeclaration')]
   ],
   InterfaceDeclaration: [
      ['NormalInterfaceDeclaration'],
      ['AnnotationTypeDeclaration']
   ],
   NormalInterfaceDeclaration: [
-     [multiple('InterfaceModifier'), 
-              literal('interface'), 'Identifier',
-              optional('TypeParameters'),
-              optional('ExtendsInterfaces'),
+     [g.multiple('InterfaceModifier'), 
+              g.literal('interface'), 'Identifier',
+              g.optional('TypeParameters'),
+              g.optional('ExtendsInterfaces'),
               'InterfaceBody']
   ],
   InterfaceModifier: [
      ['Annotation'],
-     [literal('public')],
-     [literal('protected')],
-     [literal('private')],
-     [literal('abstract')],
-     [literal('static')],
-     [literal('strictfp')]
+     [g.literal('public')],
+     [g.literal('protected')],
+     [g.literal('private')],
+     [g.literal('abstract')],
+     [g.literal('static')],
+     [g.literal('strictfp')]
   ],
   ExtendsInterfaces: [
-     [literal('extends'), 'InterfaceTypeList']
+     [g.literal('extends'), 'InterfaceTypeList']
   ],
   InterfaceBody: [
-     [literal('{'), multiple('InterfaceMemberDeclaration'), literal('}')]
+     [g.literal('{'), g.multiple('InterfaceMemberDeclaration'), g.literal('}')]
   ],
   InterfaceMemberDeclaration: [
      ['ConstantDeclaration'],
      ['InterfaceMethodDeclaration'],
      ['ClassDeclaration'],
      ['InterfaceDeclaration'],
-     [literal(';')]
+     [g.literal(';')]
   ],
   ConstantDeclaration: [
-     [multiple('ConstantModifier'),
+     [g.multiple('ConstantModifier'),
               'UnannType',
-              'VariableDeclaratorList', literal(';')]
+              'VariableDeclaratorList', g.literal(';')]
   ],
   ConstantModifier: [
      ['Annotation'],
-     [literal('public')],
-     [literal('static')],
-     [literal('final')]
+     [g.literal('public')],
+     [g.literal('static')],
+     [g.literal('final')]
   ],
   InterfaceMethodDeclaration: [
-     [multiple('InterfaceMethodModifier'),
+     [g.multiple('InterfaceMethodModifier'),
               'MethodHeader',
               'MethodBody']
   ],
   InterfaceMethodModifier: [
      ['Annotation'],
-     [literal('public')],
-     [literal('private')],
-     [literal('abstract')],
-     [literal('default')],
-     [literal('static')],
-     [literal('strictfp')]
+     [g.literal('public')],
+     [g.literal('private')],
+     [g.literal('abstract')],
+     [g.literal('default')],
+     [g.literal('static')],
+     [g.literal('strictfp')]
   ],
   AnnotationTypeDeclaration: [
-     [multiple('InterfaceModifier'),
-              literal('@'), literal('interface'), 'Identifier',
+     [g.multiple('InterfaceModifier'),
+              g.literal('@'), g.literal('interface'), 'Identifier',
               'AnnotationTypeBody']
   ],
   AnnotationTypeBody: [
-     [literal('{'),
-              multiple('AnnotationTypeMemberDeclaration'),
-              literal('}')]
+     [g.literal('{'),
+              g.multiple('AnnotationTypeMemberDeclaration'),
+              g.literal('}')]
   ],
   AnnotationTypeMemberDeclaration: [
      ['AnnotationTypeElementDeclaration'],
      ['ConstantDeclaration'],
      ['ClassDeclaration'],
      ['InterfaceDeclaration'],
-     [literal(';')]
+     [g.literal(';')]
   ],
   AnnotationTypeElementDeclaration: [
-     [multiple('AnnotationTypeElementModifier'),
+     [g.multiple('AnnotationTypeElementModifier'),
               'UnannType', 'Identifier', 
-              literal('('), literal(')'), optional('Dims'),
+              g.literal('('), g.literal(')'), g.optional('Dims'),
               
-              optional('DefaultValue'), literal(';')]
+              g.optional('DefaultValue'), g.literal(';')]
   ],
   AnnotationTypeElementModifier: [
      ['Annotation'],
-     [literal('public')],
-     [literal('abstract')]
+     [g.literal('public')],
+     [g.literal('abstract')]
   ],
   DefaultValue: [
-     [literal('default'), 'ElementValue']
+     [g.literal('default'), 'ElementValue']
   ],
   Annotation: [
      ['NormalAnnotation'],
@@ -550,14 +559,14 @@ grammar = {
      ['SingleElementAnnotation']
   ],
   NormalAnnotation: [
-     [literal('@'), 'TypeName',
-              literal('('), optional('ElementValuePairList'), literal(')')]
+     [g.literal('@'), 'TypeName',
+              g.literal('('), g.optional('ElementValuePairList'), g.literal(')')]
   ],
   ElementValuePairList: [
-     ['ElementValuePair', multiple(literal(','), 'ElementValuePair')]
+     ['ElementValuePair', g.multiple(g.literal(','), 'ElementValuePair')]
   ],
   ElementValuePair: [
-     ['Identifier', literal('='), 'ElementValue']
+     ['Identifier', g.literal('='), 'ElementValue']
   ],
   ElementValue: [
      ['ConditionalExpression'],
@@ -565,29 +574,29 @@ grammar = {
      ['Annotation']
   ],
   ElementValueArrayInitializer: [
-     [literal('{'), optional('ElementValueList'), optional(literal(',')), literal('}')]
+     [g.literal('{'), g.optional('ElementValueList'), g.optional(g.literal(',')), g.literal('}')]
   ],
   ElementValueList: [
-     ['ElementValue', multiple(literal(','), 'ElementValue')]
+     ['ElementValue', g.multiple(g.literal(','), 'ElementValue')]
   ],
   MarkerAnnotation: [
-     [literal('@'), 'TypeName']
+     [g.literal('@'), 'TypeName']
   ],
   SingleElementAnnotation: [
-     [literal('@'), 'TypeName',
-              literal('('), 'ElementValue', literal(')')]
+     [g.literal('@'), 'TypeName',
+              g.literal('('), 'ElementValue', g.literal(')')]
   ],
   ArrayInitializer: [
-     [literal('{'), optional('VariableInitializerList'), optional(literal(',')), literal('}')]
+     [g.literal('{'), g.optional('VariableInitializerList'), g.optional(g.literal(',')), g.literal('}')]
   ],
   VariableInitializerList: [
-     ['VariableInitializer', multiple(literal(','), 'VariableInitializer')]
+     ['VariableInitializer', g.multiple(g.literal(','), 'VariableInitializer')]
   ],
   Block: [
-     [literal('{'), optional('BlockStatements'), literal('}')]
+     [g.literal('{'), g.optional('BlockStatements'), g.literal('}')]
   ],
   BlockStatements: [
-     ['BlockStatement', multiple('BlockStatement')]
+     ['BlockStatement', g.multiple('BlockStatement')]
   ],
   BlockStatement: [
      ['LocalVariableDeclarationStatement'],
@@ -595,10 +604,10 @@ grammar = {
      ['Statement']
   ],
   LocalVariableDeclarationStatement: [
-     ['LocalVariableDeclaration', literal(';')]
+     ['LocalVariableDeclaration', g.literal(';')]
   ],
   LocalVariableDeclaration: [
-     [multiple('VariableModifier'),
+     [g.multiple('VariableModifier'),
               'UnannType',
               'VariableDeclaratorList']
   ],
@@ -632,18 +641,18 @@ grammar = {
      ['TryStatement']
   ],
   EmptyStatement: [
-     [literal(';')]
+     [g.literal(';')]
   ],
   LabeledStatement: [
-     ['Identifier', literal(':'),
+     ['Identifier', g.literal(':'),
               'Statement']
   ],
   LabeledStatementNoShortIf: [
-     ['Identifier', literal(':'),
+     ['Identifier', g.literal(':'),
               'StatementNoShortIf']
   ],
   ExpressionStatement: [
-     ['StatementExpression', literal(';')]
+     ['StatementExpression', g.literal(';')]
   ],
   StatementExpression: [
      ['Assignment'],
@@ -655,58 +664,58 @@ grammar = {
      ['ClassInstanceCreationExpression']
   ],
   IfThenStatement: [
-     [literal('if'), literal('('), 'Expression', literal(')'),
+     [g.literal('if'), g.literal('('), 'Expression', g.literal(')'),
               'Statement']
   ],
   IfThenElseStatement: [
-     [literal('if'), literal('('), 'Expression', literal(')'),
+     [g.literal('if'), g.literal('('), 'Expression', g.literal(')'),
               'StatementNoShortIf',
-              literal('else'), 'Statement']
+              g.literal('else'), 'Statement']
   ],
   IfThenElseStatementNoShortIf: [
-     [literal('if'), literal('('), 'Expression', literal(')'),
+     [g.literal('if'), g.literal('('), 'Expression', g.literal(')'),
               'StatementNoShortIf',
-              literal('else'), 'StatementNoShortIf']
+              g.literal('else'), 'StatementNoShortIf']
   ],
   AssertStatement: [
-     [literal('assert'), 'Expression', literal(';')],
-     [literal('assert'), 'Expression', literal(':'), 'Expression', literal(';')]
+     [g.literal('assert'), 'Expression', g.literal(';')],
+     [g.literal('assert'), 'Expression', g.literal(':'), 'Expression', g.literal(';')]
   ],
   SwitchStatement: [
-     [literal('switch'), literal('('), 'Expression', literal(')'),
+     [g.literal('switch'), g.literal('('), 'Expression', g.literal(')'),
               'SwitchBlock']
   ],
   SwitchBlock: [
-     [literal('{'),
-              multiple('SwitchBlockStatementGroup'),
-              multiple('SwitchLabel'),
-              literal('}')]
+     [g.literal('{'),
+              g.multiple('SwitchBlockStatementGroup'),
+              g.multiple('SwitchLabel'),
+              g.literal('}')]
   ],
   SwitchBlockStatementGroup: [
      ['SwitchLabels', 'BlockStatements']
   ],
   SwitchLabels: [
-     ['SwitchLabel', multiple('SwitchLabel')]
+     ['SwitchLabel', g.multiple('SwitchLabel')]
   ],
   SwitchLabel: [
-     [literal('case'), 'ConstantExpression', literal(':')],
-     [literal('case'), 'EnumConstantName', literal(':')],
-     [literal('default'), literal(':')]
+     [g.literal('case'), 'ConstantExpression', g.literal(':')],
+     [g.literal('case'), 'EnumConstantName', g.literal(':')],
+     [g.literal('default'), g.literal(':')]
   ],
   EnumConstantName: [
      ['Identifier']
   ],
   WhileStatement: [
-     [literal('while'), literal('('), 'Expression', literal(')'),
+     [g.literal('while'), g.literal('('), 'Expression', g.literal(')'),
               'Statement']
   ],
   WhileStatementNoShortIf: [
-     [literal('while'), literal('('), 'Expression', literal(')'),
+     [g.literal('while'), g.literal('('), 'Expression', g.literal(')'),
               'StatementNoShortIf']
   ],
   DoStatement: [
-     [literal('do'), 'Statement', literal('while'),
-              literal('('), 'Expression', literal(')'), literal(';')]
+     [g.literal('do'), 'Statement', g.literal('while'),
+              g.literal('('), 'Expression', g.literal(')'), g.literal(';')]
   ],
   ForStatement: [
      ['BasicForStatement'],
@@ -717,18 +726,18 @@ grammar = {
      ['EnhancedForStatementNoShortIf']
   ],
   BasicForStatement: [
-     [literal('for'), literal('('),
-              optional('ForInit'), literal(';'),
-              optional('Expression'), literal(';'),
-              optional('ForUpdate'),
-              literal(')'), 'Statement']
+     [g.literal('for'), g.literal('('),
+              g.optional('ForInit'), g.literal(';'),
+              g.optional('Expression'), g.literal(';'),
+              g.optional('ForUpdate'),
+              g.literal(')'), 'Statement']
   ],
   BasicForStatementNoShortIf: [
-     [literal('for'), literal('('),
-              optional('ForInit'), literal(';'),
-              optional('Expression'), literal(';'),
-              optional('ForUpdate'),
-              literal(')'), 'StatementNoShortIf']
+     [g.literal('for'), g.literal('('),
+              g.optional('ForInit'), g.literal(';'),
+              g.optional('Expression'), g.literal(';'),
+              g.optional('ForUpdate'),
+              g.literal(')'), 'StatementNoShortIf']
   ],
   ForInit: [
      ['StatementExpressionList'],
@@ -738,90 +747,90 @@ grammar = {
      ['StatementExpressionList']
   ],
   StatementExpressionList: [
-     ['StatementExpression', multiple(literal(','), 'StatementExpression')]
+     ['StatementExpression', g.multiple(g.literal(','), 'StatementExpression')]
   ],
   EnhancedForStatement: [
-     [literal('for'), literal('('), 
-              multiple('VariableModifier'),
+     [g.literal('for'), g.literal('('), 
+              g.multiple('VariableModifier'),
               'UnannType', 
               'VariableDeclaratorId', 
               
-              literal(':'), 'Expression',
-              literal(')'),
+              g.literal(':'), 'Expression',
+              g.literal(')'),
               
               'Statement']
   ],
   EnhancedForStatementNoShortIf: [
-     [literal('for'), literal('('), 
-              multiple('VariableModifier'),
+     [g.literal('for'), g.literal('('), 
+              g.multiple('VariableModifier'),
               'UnannType', 
               'VariableDeclaratorId',
               
-              literal(':'), 'Expression',
-              literal(')'),
+              g.literal(':'), 'Expression',
+              g.literal(')'),
               
               'StatementNoShortIf']
   ],
   BreakStatement: [
-     [literal('break'), optional('Identifier'), literal(';')]
+     [g.literal('break'), g.optional('Identifier'), g.literal(';')]
   ],
   ContinueStatement: [
-     [literal('continue'), optional('Identifier'), literal(';')]
+     [g.literal('continue'), g.optional('Identifier'), g.literal(';')]
   ],
   ReturnStatement: [
-     [literal('return'), optional('Expression'), literal(';')]
+     [g.literal('return'), g.optional('Expression'), g.literal(';')]
   ],
   ThrowStatement: [
-     [literal('throw'), 'Expression', literal(';')]
+     [g.literal('throw'), 'Expression', g.literal(';')]
   ],
   SynchronizedStatement: [
-     [literal('synchronized'),
-              literal('('), 'Expression', literal(')'),
+     [g.literal('synchronized'),
+              g.literal('('), 'Expression', g.literal(')'),
               'Block']
   ],
   TryStatement: [
-     [literal('try'), 'Block', 'Catches'],
-     [literal('try'), 'Block', optional('Catches'), 'Finally'],
+     [g.literal('try'), 'Block', 'Catches'],
+     [g.literal('try'), 'Block', g.optional('Catches'), 'Finally'],
      ['TryWithResourcesStatement']
   ],
   Catches: [
-     ['CatchClause', multiple('CatchClause')]
+     ['CatchClause', g.multiple('CatchClause')]
   ],
   CatchClause: [
-     [literal('catch'),
-              literal('('), 'CatchFormalParameter', literal(')'),
+     [g.literal('catch'),
+              g.literal('('), 'CatchFormalParameter', g.literal(')'),
               'Block']
   ],
   CatchFormalParameter: [
-     [multiple('VariableModifier'),
+     [g.multiple('VariableModifier'),
               'CatchType',
               'VariableDeclaratorId']
   ],
   CatchType: [
      ['UnannClassType',
-              multiple(literal('|'), 'ClassType')]
+              g.multiple(g.literal('|'), 'ClassType')]
   ],
   Finally: [
-     [literal('finally'), 'Block']
+     [g.literal('finally'), 'Block']
   ],
   TryWithResourcesStatement: [
-     [literal('try'),
+     [g.literal('try'),
               'ResourceSpecification',
               'Block',
-              optional('Catches'),
-              optional('Finally')]
+              g.optional('Catches'),
+              g.optional('Finally')]
   ],
   ResourceSpecification: [
-     [literal('('), 'ResourceList', optional(literal(';')), literal(')')]
+     [g.literal('('), 'ResourceList', g.optional(g.literal(';')), g.literal(')')]
   ],
   ResourceList: [
-     ['Resource', multiple(literal(';'), 'Resource')]
+     ['Resource', g.multiple(g.literal(';'), 'Resource')]
   ],
   Resource: [
-     [multiple('VariableModifier'),
+     [g.multiple('VariableModifier'),
               'UnannType',
               'VariableDeclaratorId',
-              literal('='), 'Expression'],
+              g.literal('='), 'Expression'],
      ['VariableAccess']
   ],
   Primary: [
@@ -831,9 +840,9 @@ grammar = {
   PrimaryNoNewArray: [
      ['Literal'],
      ['ClassLiteral'],
-     [literal('this')],
-     ['TypeName', literal('.'), literal('this')],
-     [literal('('), 'Expression', literal(')')],
+     [g.literal('this')],
+     ['TypeName', g.literal('.'), g.literal('this')],
+     [g.literal('('), 'Expression', g.literal(')')],
      ['ClassInstanceCreationExpression'],
      ['FieldAccess'],
      ['ArrayAccess'],
@@ -841,103 +850,103 @@ grammar = {
      ['MethodReference']
   ],
   ClassLiteral: [
-     ['TypeName', multiple(literal('['), literal(']')), literal('.'), literal('class')],
-     ['NumericType', multiple(literal('['), literal(']')), literal('.'), literal('class')],
-     [literal('boolean'), multiple(literal('['), literal(']')), literal('.'), literal('class')],
-     [literal('void'), literal('.'), literal('class')]
+     ['TypeName', g.multiple(g.literal('['), g.literal(']')), g.literal('.'), g.literal('class')],
+     ['NumericType', g.multiple(g.literal('['), g.literal(']')), g.literal('.'), g.literal('class')],
+     [g.literal('boolean'), g.multiple(g.literal('['), g.literal(']')), g.literal('.'), g.literal('class')],
+     [g.literal('void'), g.literal('.'), g.literal('class')]
   ],
   ClassInstanceCreationExpression: [
      [
               
               'UnqualifiedClassInstanceCreationExpression'],
-     ['ExpressionName', literal('.'), 'UnqualifiedClassInstanceCreationExpression'],
-     ['Primary', literal('.'), 'UnqualifiedClassInstanceCreationExpression']
+     ['ExpressionName', g.literal('.'), 'UnqualifiedClassInstanceCreationExpression'],
+     ['Primary', g.literal('.'), 'UnqualifiedClassInstanceCreationExpression']
   ],
   UnqualifiedClassInstanceCreationExpression: [
-     [literal('new'), optional('TypeArguments'),
+     [g.literal('new'), g.optional('TypeArguments'),
               
               'ClassOrInterfaceTypeToInstantiate',
-              literal('('), optional('ArgumentList'), literal(')'), optional('ClassBody')]
+              g.literal('('), g.optional('ArgumentList'), g.literal(')'), g.optional('ClassBody')]
   ],
   ClassOrInterfaceTypeToInstantiate: [
-     [multiple('Annotation'), 'Identifier',
-              multiple(literal('.'), multiple('Annotation'), 'Identifier',),
-              optional('TypeArgumentsOrDiamond')]
+     [g.multiple('Annotation'), 'Identifier',
+              g.multiple(g.literal('.'), g.multiple('Annotation'), 'Identifier',),
+              g.optional('TypeArgumentsOrDiamond')]
   ],
   TypeArgumentsOrDiamond: [
      ['TypeArguments'],
-     [literal('&lt;&gt;')]
+     [g.literal('&lt;&gt;')]
   ],
   FieldAccess: [
-     ['Primary', literal('.'), 'Identifier'],
-     [literal('super'), literal('.'), 'Identifier'],
-     ['TypeName', literal('.'), literal('super'), literal('.'), 'Identifier']
+     ['Primary', g.literal('.'), 'Identifier'],
+     [g.literal('super'), g.literal('.'), 'Identifier'],
+     ['TypeName', g.literal('.'), g.literal('super'), g.literal('.'), 'Identifier']
   ],
   ArrayAccess: [
-     ['ExpressionName', literal('['), 'Expression', literal(']')],
-     ['PrimaryNoNewArray', literal('['), 'Expression', literal(']')]
+     ['ExpressionName', g.literal('['), 'Expression', g.literal(']')],
+     ['PrimaryNoNewArray', g.literal('['), 'Expression', g.literal(']')]
   ],
   MethodInvocation: [
      [
               
-              'MethodName', literal('('), optional('ArgumentList'), literal(')')],
-     ['TypeName', literal('.'), optional('TypeArguments'), 'Identifier',
-              literal('('), optional('ArgumentList'), literal(')')],
-     ['ExpressionName', literal('.'), optional('TypeArguments'), 'Identifier',
-              literal('('), optional('ArgumentList'), literal(')')],
-     ['Primary', literal('.'), optional('TypeArguments'), 'Identifier',
-              literal('('), optional('ArgumentList'), literal(')')],
-     [literal('super'), literal('.'), optional('TypeArguments'), 'Identifier',
-              literal('('), optional('ArgumentList'), literal(')')],
-     ['TypeName', literal('.'), literal('super'), literal('.'), optional('TypeArguments'), 'Identifier',
-              literal('('), optional('ArgumentList'), literal(')')]
+              'MethodName', g.literal('('), g.optional('ArgumentList'), g.literal(')')],
+     ['TypeName', g.literal('.'), g.optional('TypeArguments'), 'Identifier',
+              g.literal('('), g.optional('ArgumentList'), g.literal(')')],
+     ['ExpressionName', g.literal('.'), g.optional('TypeArguments'), 'Identifier',
+              g.literal('('), g.optional('ArgumentList'), g.literal(')')],
+     ['Primary', g.literal('.'), g.optional('TypeArguments'), 'Identifier',
+              g.literal('('), g.optional('ArgumentList'), g.literal(')')],
+     [g.literal('super'), g.literal('.'), g.optional('TypeArguments'), 'Identifier',
+              g.literal('('), g.optional('ArgumentList'), g.literal(')')],
+     ['TypeName', g.literal('.'), g.literal('super'), g.literal('.'), g.optional('TypeArguments'), 'Identifier',
+              g.literal('('), g.optional('ArgumentList'), g.literal(')')]
   ],
   ArgumentList: [
-     ['Expression', multiple(literal(','), 'Expression')]
+     ['Expression', g.multiple(g.literal(','), 'Expression')]
   ],
   MethodReference: [
      [
               
-              'ExpressionName', literal('::'),
-              optional('TypeArguments'), 'Identifier'],
-     ['Primary', literal('::'),
-              optional('TypeArguments'), 'Identifier'],
-     ['ReferenceType', literal('::'),
-              optional('TypeArguments'), 'Identifier'],
-     [literal('super'), literal('::'),
-              optional('TypeArguments'), 'Identifier'],
-     ['TypeName', literal('.'), literal('super'), literal('::'),
-              optional('TypeArguments'), 'Identifier'],
-     ['ClassType', literal('::'),
-              optional('TypeArguments'), literal('new')],
-     ['ArrayType', literal('::'), literal('new')]
+              'ExpressionName', g.literal('::'),
+              g.optional('TypeArguments'), 'Identifier'],
+     ['Primary', g.literal('::'),
+              g.optional('TypeArguments'), 'Identifier'],
+     ['ReferenceType', g.literal('::'),
+              g.optional('TypeArguments'), 'Identifier'],
+     [g.literal('super'), g.literal('::'),
+              g.optional('TypeArguments'), 'Identifier'],
+     ['TypeName', g.literal('.'), g.literal('super'), g.literal('::'),
+              g.optional('TypeArguments'), 'Identifier'],
+     ['ClassType', g.literal('::'),
+              g.optional('TypeArguments'), g.literal('new')],
+     ['ArrayType', g.literal('::'), g.literal('new')]
   ],
   ArrayCreationExpression: [
-     [literal('new'), 'PrimitiveType', 'DimExprs', optional('Dims')],
-     [literal('new'), 'ClassOrInterfaceType', 'DimExprs', optional('Dims')],
-     [literal('new'), 'PrimitiveType', 'Dims', 'ArrayInitializer'],
-     [literal('new'), 'ClassOrInterfaceType', 'Dims', 'ArrayInitializer']
+     [g.literal('new'), 'PrimitiveType', 'DimExprs', g.optional('Dims')],
+     [g.literal('new'), 'ClassOrInterfaceType', 'DimExprs', g.optional('Dims')],
+     [g.literal('new'), 'PrimitiveType', 'Dims', 'ArrayInitializer'],
+     [g.literal('new'), 'ClassOrInterfaceType', 'Dims', 'ArrayInitializer']
   ],
   DimExprs: [
-     ['DimExpr', multiple('DimExpr')]
+     ['DimExpr', g.multiple('DimExpr')]
   ],
   DimExpr: [
-     [multiple('Annotation'), literal('['), 'Expression', literal(']')]
+     [g.multiple('Annotation'), g.literal('['), 'Expression', g.literal(']')]
   ],
   Expression: [
      ['LambdaExpression'],
      ['AssignmentExpression']
   ],
   LambdaExpression: [
-     ['LambdaParameters', literal('-&gt;'), 'LambdaBody']
+     ['LambdaParameters', g.literal('-&gt;'), 'LambdaBody']
   ],
   LambdaParameters: [
      ['Identifier'],
-     [literal('('), optional('FormalParameterList'), literal(')')],
-     [literal('('), 'InferredFormalParameterList', literal(')')]
+     [g.literal('('), g.optional('FormalParameterList'), g.literal(')')],
+     [g.literal('('), 'InferredFormalParameterList', g.literal(')')]
   ],
   InferredFormalParameterList: [
-     ['Identifier', multiple(literal(','), 'Identifier')]
+     ['Identifier', g.multiple(g.literal(','), 'Identifier')]
   ],
   LambdaBody: [
      ['Expression'],
@@ -956,96 +965,96 @@ grammar = {
      ['ArrayAccess']
   ],
   AssignmentOperator: [
-     [literal('=')],
-     [literal('*=')],
-     [literal('/=')],
-     [literal('%=')],
-     [literal('+=')],
-     [literal('-=')],
-     [literal('&lt;&lt;=')],
-     [literal('&gt;&gt;=')],
-     [literal('&gt;&gt;&gt;=')],
-     [literal('&amp;=')],
-     [literal('^=')],
-     [literal('|='),
+     [g.literal('=')],
+     [g.literal('*=')],
+     [g.literal('/=')],
+     [g.literal('%=')],
+     [g.literal('+=')],
+     [g.literal('-=')],
+     [g.literal('&lt;&lt;=')],
+     [g.literal('&gt;&gt;=')],
+     [g.literal('&gt;&gt;&gt;=')],
+     [g.literal('&amp;=')],
+     [g.literal('^=')],
+     [g.literal('|='),
             ]
   ],
   ConditionalExpression: [
      ['ConditionalOrExpression'],
-     ['ConditionalOrExpression', literal('?'), 
-              'Expression', literal(':'), 
+     ['ConditionalOrExpression', g.literal('?'), 
+              'Expression', g.literal(':'), 
               'ConditionalExpression'],
-      ['ConditionalOrExpression', literal('?'), 
-              'Expression', literal(':'), 
+      ['ConditionalOrExpression', g.literal('?'), 
+              'Expression', g.literal(':'), 
               'LambdaExpression']
   ],
   ConditionalOrExpression: [
      ['ConditionalAndExpression'],
-     ['ConditionalOrExpression', literal('||'), 'ConditionalAndExpression']
+     ['ConditionalOrExpression', g.literal('||'), 'ConditionalAndExpression']
   ],
   ConditionalAndExpression: [
      ['InclusiveOrExpression'],
-     ['ConditionalAndExpression', literal('&amp;&amp;'), 'InclusiveOrExpression']
+     ['ConditionalAndExpression', g.literal('&amp;&amp;'), 'InclusiveOrExpression']
   ],
   InclusiveOrExpression: [
      ['ExclusiveOrExpression'],
-     ['InclusiveOrExpression', literal('|'), 'ExclusiveOrExpression']
+     ['InclusiveOrExpression', g.literal('|'), 'ExclusiveOrExpression']
   ],
   ExclusiveOrExpression: [
      ['AndExpression'],
-     ['ExclusiveOrExpression', literal('^'), 'AndExpression']
+     ['ExclusiveOrExpression', g.literal('^'), 'AndExpression']
   ],
   AndExpression: [
      ['EqualityExpression'],
-     ['AndExpression', literal('&amp;'), 'EqualityExpression']
+     ['AndExpression', g.literal('&amp;'), 'EqualityExpression']
   ],
   EqualityExpression: [
      ['RelationalExpression'],
-     ['EqualityExpression', literal('=='), 'RelationalExpression'],
-     ['EqualityExpression', literal('!='), 'RelationalExpression']
+     ['EqualityExpression', g.literal('=='), 'RelationalExpression'],
+     ['EqualityExpression', g.literal('!='), 'RelationalExpression']
   ],
   RelationalExpression: [
      ['ShiftExpression'],
-     ['RelationalExpression', literal('&lt;'), 'ShiftExpression'],
-     ['RelationalExpression', literal('&gt;'), 'ShiftExpression'],
-     ['RelationalExpression', literal('&lt;='), 'ShiftExpression'],
-     ['RelationalExpression', literal('&gt;='), 'ShiftExpression'],
-     ['RelationalExpression', literal('instanceof'), 'ReferenceType']
+     ['RelationalExpression', g.literal('&lt;'), 'ShiftExpression'],
+     ['RelationalExpression', g.literal('&gt;'), 'ShiftExpression'],
+     ['RelationalExpression', g.literal('&lt;='), 'ShiftExpression'],
+     ['RelationalExpression', g.literal('&gt;='), 'ShiftExpression'],
+     ['RelationalExpression', g.literal('instanceof'), 'ReferenceType']
   ],
   ShiftExpression: [
      ['AdditiveExpression'],
-     ['ShiftExpression', literal('&lt;&lt;'), 'AdditiveExpression'],
-     ['ShiftExpression', literal('&gt;&gt;'), 'AdditiveExpression'],
-     ['ShiftExpression', literal('&gt;&gt;&gt;'), 'AdditiveExpression']
+     ['ShiftExpression', g.literal('&lt;&lt;'), 'AdditiveExpression'],
+     ['ShiftExpression', g.literal('&gt;&gt;'), 'AdditiveExpression'],
+     ['ShiftExpression', g.literal('&gt;&gt;&gt;'), 'AdditiveExpression']
   ],
   AdditiveExpression: [
      ['MultiplicativeExpression'],
-     ['AdditiveExpression', literal('+'), 'MultiplicativeExpression'],
-     ['AdditiveExpression', literal('-'), 'MultiplicativeExpression']
+     ['AdditiveExpression', g.literal('+'), 'MultiplicativeExpression'],
+     ['AdditiveExpression', g.literal('-'), 'MultiplicativeExpression']
   ],
   MultiplicativeExpression: [
      ['UnaryExpression'],
-     ['MultiplicativeExpression', literal('*'), 'UnaryExpression'],
-     ['MultiplicativeExpression', literal('/'), 'UnaryExpression'],
-     ['MultiplicativeExpression', literal('%'), 'UnaryExpression']
+     ['MultiplicativeExpression', g.literal('*'), 'UnaryExpression'],
+     ['MultiplicativeExpression', g.literal('/'), 'UnaryExpression'],
+     ['MultiplicativeExpression', g.literal('%'), 'UnaryExpression']
   ],
   UnaryExpression: [
      ['UnaryExpressionNotPlusMinus'],
      ['PreIncrementExpression'],
      ['PreDecrementExpression'],
-     [literal('+'), 'UnaryExpression'],
-     [literal('-'), 'UnaryExpression']
+     [g.literal('+'), 'UnaryExpression'],
+     [g.literal('-'), 'UnaryExpression']
   ],
   PreIncrementExpression: [
-     [literal('++'), 'UnaryExpression']
+     [g.literal('++'), 'UnaryExpression']
   ],
   PreDecrementExpression: [
-     [literal('--'), 'UnaryExpression']
+     [g.literal('--'), 'UnaryExpression']
   ],
   UnaryExpressionNotPlusMinus: [
      ['PostfixExpression'],
-     [literal('~'), 'UnaryExpression'],
-     [literal('!'), 'UnaryExpression'],
+     [g.literal('~'), 'UnaryExpression'],
+     [g.literal('!'), 'UnaryExpression'],
      ['CastExpression']
   ],
   PostfixExpression: [
@@ -1055,17 +1064,17 @@ grammar = {
      ['PostDecrementExpression']
   ],
   PostIncrementExpression: [
-     ['PostfixExpression', literal('++')]
+     ['PostfixExpression', g.literal('++')]
   ],
   PostDecrementExpression: [
-     ['PostfixExpression', literal('--')]
+     ['PostfixExpression', g.literal('--')]
   ],
   CastExpression: [
-     [literal('('), 'PrimitiveType', literal(')'),
+     [g.literal('('), 'PrimitiveType', g.literal(')'),
               'UnaryExpression'],
-     [literal('('), 'ReferenceType', multiple('AdditionalBound'), literal(')'),
+     [g.literal('('), 'ReferenceType', g.multiple('AdditionalBound'), g.literal(')'),
               'UnaryExpressionNotPlusMinus'],
-     [literal('('), 'ReferenceType', multiple('AdditionalBound'), literal(')'),
+     [g.literal('('), 'ReferenceType', g.multiple('AdditionalBound'), g.literal(')'),
               'LambdaExpression']
   ],
   ConstantExpression: [
@@ -1073,20 +1082,8 @@ grammar = {
   ]
 };
 
-console.log("Done.");
-
 $(() => {
-  let startChooser = new Choice(
-    "Choose starting symbol",
-    [
-      ['CompilationUnit'],
-      ['Statement'],
-      ['Expression']
-    ],
-    "nonterminal",
-    true);
-
-  let startElem = startChooser.renderWithTreeNode().addClass("start");
-  $('.workspace').empty().append(startElem);
-  $('.tree').empty().append(GrammarNode.treeNodeFor(startElem));
+  g.show();
 });
+
+})();
