@@ -15,7 +15,7 @@ class GrammarNode {
 
   renderWithTreeNode() {
     let elem = this.render();
-    elem.data('treenode', this.createTreeNode());
+    elem.data('tree-node', this.createTreeNode());
     return elem;
   }
 }
@@ -88,14 +88,14 @@ class Choice extends GrammarNode {
       ...this.choices.map((choice) => {
         return choice.renderSummary()
           .click(() => {
-            let treeParent = $(chooser).data('treenode');
+            let treeParent = $(chooser).data('tree-node');
             let replacement = choice.render();
 
             $(chooser).replaceWith(replacement);
 
             let treeChildren = treeParent.children('.children');
             for(let newChild of replacement) {
-              let childTreeNode = newChild.data('treenode');
+              let childTreeNode = newChild.data('tree-node');
               if(childTreeNode)
                 treeChildren.append(childTreeNode);
             }
@@ -146,11 +146,32 @@ class TextInput extends GrammarNode {
 
   render() {
     return this.renderSummary().prepend(
-      $('<input type="text">'));
+      $('<input class="value" type="text">'));
   }
 
   renderSummary() {
     return elem("div", "text-input", elem("div", "caption", this.caption));
+  }
+
+  createTreeNode() {
+    return elem("div", "tree-node",
+      elem("div", "text-input",
+        elem("div", "value", "…")));
+  }
+
+  renderWithTreeNode() {
+    let elem = super.renderWithTreeNode();
+
+    let updateText = (e) => {
+      $(elem).data('tree-node')
+        .find('.value')
+        .text($(e.target).val());
+    };
+    $(elem).find('input')
+      .change(updateText)
+      .keyup(updateText);
+
+    return elem;
   }
 }
 
