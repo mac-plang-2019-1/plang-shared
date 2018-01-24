@@ -1078,5 +1078,5 @@ console.log("Done.");
 $(() => {
   let startElem = findSymbol('Statement').renderWithTreeNode();
   $('.workspace').empty().append(startElem);
-  $('.tree').empty().append(startElem.data('tree-node'));
+  $('.tree').empty().append(GrammarNode.treeNodeFor(startElem));
 });
