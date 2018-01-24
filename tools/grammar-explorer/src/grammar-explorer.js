@@ -113,7 +113,9 @@ class Choice extends GrammarNode {
             }
           });
       }));
-    chooser.append(choices)
+    chooser.append(
+      elem("div", "choicescontainer",
+        choices))
 
     header.click(() => { choices.toggle() });
 
