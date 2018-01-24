@@ -8,6 +8,7 @@ html, body {
 }
 
 .workspace, .tree {
+    height: 100%;
     overflow: scroll;
     padding: 0.6em;
     font-family: 'Helvetica Neue', 'Verdana', sans-serif;
@@ -15,7 +16,6 @@ html, body {
 
 .workspace {
     width: 60%;
-    height: 100%;
     float: left;
 }
 
