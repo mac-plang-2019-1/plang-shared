@@ -5,6 +5,7 @@ function elem(tag, cssClass, ...children) {
     .append(children);
 }
 
+// –––––– Grammar node types ––––––
 
 class GrammarNode {
   createTreeNode() {
@@ -40,6 +41,7 @@ class Literal extends GrammarNode {
   }
 }
 
+
 class Sequence extends GrammarNode {
   constructor(children) {
     super();
@@ -74,6 +76,7 @@ class Sequence extends GrammarNode {
     }
   }
 }
+
 
 class Choice extends GrammarNode {
   constructor(name, choices, cssClass, replaceTreeNode) {
@@ -127,6 +130,7 @@ class Choice extends GrammarNode {
   }
 }
 
+
 class Repetition extends GrammarNode {
   constructor(child) {
     super();
@@ -151,6 +155,7 @@ class Nothing extends GrammarNode {
     return elem("div", "nothing", "< nothing >");
   }
 }
+
 
 class TextInput extends GrammarNode {
   constructor(caption) {
@@ -188,6 +193,8 @@ class TextInput extends GrammarNode {
     return elem;
   }
 }
+
+// –––––– Node creation helpers for grammar ––––––
 
 function textSummary(items) {
   return items.map((item) => {
@@ -228,10 +235,9 @@ function textInput() {
   return new TextInput(...arguments);
 }
 
+// –––––– Grammar placeholder ––––––
 
-
-
-let grammar = { };
+let grammar = { };  // Real grammar loaded later in separate file
 
 function findSymbol(symbolName) {
   let result = grammar[symbolName];
