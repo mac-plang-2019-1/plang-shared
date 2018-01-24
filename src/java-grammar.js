@@ -1,12 +1,15 @@
 (() => {
 
 let g = new Grammar({
+  name: "Java",
   startSymbols: [
     'CompilationUnit',
     'Statement',
     'Expression'
   ]
 });
+
+addGrammar(g);
 
 g.productions = {
   Identifier: [
@@ -1081,9 +1084,5 @@ g.productions = {
      ['Expression']
   ]
 };
-
-$(() => {
-  g.show();
-});
 
 })();

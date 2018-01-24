@@ -209,6 +209,7 @@ class TextInput extends GrammarNode {
 
 class Grammar {
   constructor(opts) {
+    this.name = opts.name;
     this.startSymbols = opts.startSymbols;
   }
 
@@ -275,3 +276,11 @@ class Grammar {
     $('.tree').empty().append(GrammarNode.treeNodeFor(startElem));
   }
 }
+
+let grammars = [];
+
+function addGrammar(grammar) {
+  grammars.push(grammar);  
+}
+
+$(() => grammars[0].show());
