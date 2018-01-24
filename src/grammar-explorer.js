@@ -301,4 +301,56 @@ function addGrammar(grammar) {
   grammars.push(grammar);  
 }
 
-$(() => grammars[0].show());
+// –––––– Generator ––––––
+
+let randomGenerationInProgress = false;
+
+function toggleRandomGeneration() {
+  if(randomGenerationInProgress)
+    stopRandomGeneration();
+  else
+    startRandomGeneration();
+}
+
+function startRandomGeneration() {
+  randomGenerationInProgress = true;
+
+  $('.generate').addClass('in-progress');
+
+  let randomElem = function(elems) {
+    return elems[Math.floor(Math.random() * elems.length)];
+  }
+
+  let generationDelay = 1000;
+  let applyRandomProduction = function() {
+    if(!randomGenerationInProgress)
+      return;  // user stopped it
+
+    let target = randomElem($('.chooser'));
+    if(!target){
+      stopRandomGeneration();
+      return;  // no substitutions left
+    }
+
+    target.click();
+    randomElem($(target).find('.choices > *')).click();
+
+    generationDelay *= 0.9;
+    setTimeout(applyRandomProduction, generationDelay);
+  }
+
+  applyRandomProduction();
+}
+
+function stopRandomGeneration() {
+  randomGenerationInProgress = false;
+  $('.generate').removeClass('in-progress');
+}
+
+// –––––– Page setup & event binding ––––––
+
+$(() => {
+  grammars[0].show();  // could switch this to a drop-down if we ever have multiple grammars
+
+  $('.generate').click(toggleRandomGeneration);
+});
