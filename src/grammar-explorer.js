@@ -5,9 +5,15 @@ function elem(tag, cssClass, ...children) {
     .append(children);
 }
 
-// –––––– Grammar node types ––––––
+// –––––– Grammar nodes ––––––
 
 class GrammarNode {
+  constructor(grammar) {
+    if(!grammar)
+      throw "No grammar provided";
+    this.grammar = grammar;
+  }
+
   createTreeNode() {
     return elem("div", "tree-node",
       this.renderSummary(),
@@ -27,8 +33,8 @@ class GrammarNode {
 
 
 class Literal extends GrammarNode {
-  constructor(text) {
-    super();
+  constructor(grammar, text) {
+    super(grammar);
     this.text = text;
   }
 
@@ -43,15 +49,15 @@ class Literal extends GrammarNode {
 
 
 class Sequence extends GrammarNode {
-  constructor(children) {
-    super();
+  constructor(grammar, children) {
+    super(grammar);
     this.children = children;
   }
 
   get resolvedChildren() {
     return this.children.map((child) => {
       if(typeof child == "string")
-        return findSymbol(child);
+        return this.grammar.findSymbol(child);
       else
         return child;
     });
@@ -79,10 +85,10 @@ class Sequence extends GrammarNode {
 
 
 class Choice extends GrammarNode {
-  constructor(name, choices, cssClass, replaceTreeNode) {
-    super();
+  constructor(grammar, name, choices, cssClass, replaceTreeNode) {
+    super(grammar);
     this.name = name;
-    this.choices = choices.map((choice) => { return new Sequence(choice) });
+    this.choices = choices.map((choice) => { return new Sequence(this.grammar, choice) });
     this.cssClass = cssClass;
     this.replaceTreeNode = replaceTreeNode;
   }
@@ -132,8 +138,8 @@ class Choice extends GrammarNode {
 
 
 class Repetition extends GrammarNode {
-  constructor(child) {
-    super();
+  constructor(grammar, child) {
+    super(grammar);
     this.child = child;
   }
 
@@ -148,6 +154,10 @@ class Repetition extends GrammarNode {
 
 
 class Nothing extends GrammarNode {
+  constructor(grammar) {
+    super(grammar);
+  }
+
   render() {
     return $([]);
   }
@@ -159,8 +169,8 @@ class Nothing extends GrammarNode {
 
 
 class TextInput extends GrammarNode {
-  constructor(caption) {
-    super();
+  constructor(grammar, caption) {
+    super(grammar);
     this.caption = caption;
   }
 
@@ -195,56 +205,73 @@ class TextInput extends GrammarNode {
   }
 }
 
-// –––––– Node creation helpers for grammar ––––––
+// –––––– Grammar ––––––
 
-function textSummary(items) {
-  return items.map((item) => {
-    return item.renderSummary ? item.renderSummary().text() : item;
-  }).join(" ");
-}
-
-function literal(text) {
-  return new Literal(text);
-}
-
-function optional(...items) {
-  return new Choice(
-    textSummary(items),
-    [
-      items,
-      [new Nothing()]
-    ],
-    "optional nonterminal",
-    true);
-}
-
-function multiple(...items) {
-  let repetition = new Repetition();
-  let choice = new Choice(
-    textSummary(items),
-    [
-      items.concat(repetition),
-      [new Nothing()]
-    ],
-    "multiple nonterminal",
-    true);
-  repetition.child = choice;
-  return choice;
-}
-
-function textInput() {
-  return new TextInput(...arguments);
-}
-
-// –––––– Grammar placeholder ––––––
-
-let grammar = { };  // Real grammar loaded later in separate file
-
-function findSymbol(symbolName) {
-  let result = grammar[symbolName];
-  if(Array.isArray(result)) {
-    result = new Choice(symbolName, result, "nonterminal");
-    grammar[symbolName] = result;
+class Grammar {
+  constructor(opts) {
+    this.startSymbols = opts.startSymbols;
   }
-  return result;
+
+  literal(text) {
+    return new Literal(this, text);
+  }
+
+  optional(...items) {
+    return new Choice(
+      this,
+      this._textSummary(items),
+      [
+        items,
+        [new Nothing(this)]
+      ],
+      "optional nonterminal",
+      true);
+  }
+
+  multiple(...items) {
+    let repetition = new Repetition(this);
+    let choice = new Choice(
+      this,
+      this._textSummary(items),
+      [
+        items.concat(repetition),
+        [new Nothing(this)]
+      ],
+      "multiple nonterminal",
+      true);
+    repetition.child = choice;
+    return choice;
+  }
+
+  _textSummary(items) {
+    return items.map((item) => {
+      return item.renderSummary ? item.renderSummary().text() : item;
+    }).join(" ");
+  }
+
+  textInput() {
+    return new TextInput(this, ...arguments);
+  }
+
+  findSymbol(symbolName) {
+    let result = this.productions[symbolName];
+    if(Array.isArray(result)) {
+      result = new Choice(this, symbolName, result, "nonterminal");
+      this.productions[symbolName] = result;
+    }
+    return result;
+  }
+
+  show() {
+    let startChooser = new Choice(
+      this,
+      "Choose starting symbol",
+      this.startSymbols.map((sym) => [sym]),
+      "nonterminal",
+      true);
+
+    let startElem = startChooser.renderWithTreeNode().addClass("start");
+    $('.workspace').empty().append(startElem);
+    $('.tree').empty().append(GrammarNode.treeNodeFor(startElem));
+  }
 }
