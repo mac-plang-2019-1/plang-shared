@@ -5,8 +5,25 @@ function elem(tag, cssClass, ...children) {
     .append(children);
 }
 
-class Literal {
+
+class GrammarNode {
+  createTreeNode() {
+    return elem("div", "tree-node",
+      this.renderSummary(),
+      elem("div", "children"));
+  }
+
+  renderWithTreeNode() {
+    let elem = this.render();
+    elem.data('treenode', this.createTreeNode());
+    return elem;
+  }
+}
+
+
+class Literal extends GrammarNode {
   constructor(text) {
+    super();
     this.text = text;
   }
 
@@ -19,8 +36,9 @@ class Literal {
   }
 }
 
-class Sequence {
+class Sequence extends GrammarNode {
   constructor(children) {
+    super();
     this.children = children;
   }
 
@@ -34,17 +52,28 @@ class Sequence {
   }
 
   render() {
-    return this.resolvedChildren.map((child) => { return child.render() });
+    return this.resolvedChildren.map((child) => {
+      return child.renderWithTreeNode();
+    });
   }
 
   renderSummary() {
     return elem("div", "substitution",
       ...this.resolvedChildren.map((child) => { return child.renderSummary() }));
   }
+
+  insertTreeNodes(treeParent) {
+    let childContainer = treeParent.children('.children');
+    for(let child of this.resolvedChildren) {
+      childContainer.append(
+        child.createTreeNode());
+    }
+  }
 }
 
-class Choice {
+class Choice extends GrammarNode {
   constructor(name, choices, cssClass) {
+    super();
     this.name = name;
     this.choices = choices.map((choice) => { return new Sequence(choice) });
     this.cssClass = cssClass;
@@ -59,13 +88,16 @@ class Choice {
       ...this.choices.map((choice) => {
         return choice.renderSummary()
           .click(() => {
+            let treeParent = $(chooser).data('treenode');
             let replacement = choice.render();
+
             $(chooser).replaceWith(replacement);
 
-            let treeChildren = findTreeNodeFor(chooser).children('.children');
+            let treeChildren = treeParent.children('.children');
             for(let newChild of replacement) {
-              treeChildren.append(
-                createTreeNodeFor(newChild));
+              let childTreeNode = newChild.data('treenode');
+              if(childTreeNode)
+                treeChildren.append(childTreeNode);
             }
           });
       }));
@@ -81,8 +113,9 @@ class Choice {
   }
 }
 
-class Repetition {
+class Repetition extends GrammarNode {
   constructor(child) {
+    super();
     this.child = child;
   }
 
@@ -95,9 +128,9 @@ class Repetition {
   }
 }
 
-class Nothing {
+class Nothing extends GrammarNode {
   render() {
-    return [];
+    return $([]);
   }
 
   renderSummary() {
@@ -105,8 +138,9 @@ class Nothing {
   }
 }
 
-class TextInput {
+class TextInput extends GrammarNode {
   constructor(caption) {
+    super();
     this.caption = caption;
   }
 
@@ -169,26 +203,4 @@ function findSymbol(symbolName) {
     grammar[symbolName] = result;
   }
   return result;
-}
-
-
-
-var treeNodeId = 0;
-
-function createTreeNodeFor(grammarElem) {
-  let text = $(grammarElem).find('.header').text() || $(grammarElem).text();
-
-  let treeNode = elem("div", "tree-node",
-    elem("div", "label", text),
-    elem("div", "children"));
-  $(grammarElem).attr('tree-node-id', treeNodeId);
-  $(treeNode).attr('id', 'tree-node-' + treeNodeId);
-
-  treeNodeId++;
-
-  return treeNode;
-}
-
-function findTreeNodeFor(grammarElem) {
-  return $('#tree-node-' + $(grammarElem).attr('tree-node-id'));
 }

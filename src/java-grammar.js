@@ -1076,7 +1076,7 @@ grammar = {
 console.log("Done.");
 
 $(() => {
-  let startElem = findSymbol('Statement').render();
+  let startElem = findSymbol('Statement').renderWithTreeNode();
   $('.workspace').empty().append(startElem);
-  $('.tree').empty().append(createTreeNodeFor(startElem));
+  $('.tree').empty().append(startElem.data('treenode'));
 });

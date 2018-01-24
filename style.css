@@ -132,9 +132,25 @@ html, body {
 }
 
 .tree {
-    font-size: 80%;
+    font-size: 95%;
 }
 
 .tree-node {
     padding-left: 1em;
+}
+
+.tree-node .nonterminal {
+    background: white;
+    color: black;
+    margin: 0;
+    padding: 0;
+}
+
+.tree-node .literal {
+    margin: 0.2em 0;
+}
+
+.tree-node .nonterminal:before,
+.tree-node .nonterminal:after {
+    color: rgba(0, 0, 0, 0.5);
 }
