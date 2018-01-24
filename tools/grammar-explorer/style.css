@@ -26,6 +26,34 @@ body {
     display: inline-block;
 }
 
+.generate {
+    float: right;
+    padding: 0.2em;
+    margin: 0.9em 0.2em;
+}
+
+.generate a {
+    display: inline-block;
+    text-decoration: none;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    from { transform: scale(1.0); }
+    to   { transform: scale(1.5); }
+}
+
+.generate.in-progress {
+    animation: spin 0.6366197723675814s infinite linear;
+}
+.generate.in-progress a {
+    animation: pulse 0.7357588823428847s infinite alternate ease-in-out;
+}
+
 .page-content {
     flex-grow: 1;
     overflow: hidden;
