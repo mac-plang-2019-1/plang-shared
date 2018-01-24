@@ -85,7 +85,7 @@ class Sequence extends GrammarNode {
 
 
 class Choice extends GrammarNode {
-  constructor(grammar, name, choices, cssClass, replaceTreeNode) {
+  constructor({ grammar, name, choices, cssClass, replaceTreeNode = false }) {
     super(grammar);
     this.name = name;
     this.choices = choices.map((choice) => { return new Sequence(this.grammar, choice) });
@@ -208,9 +208,9 @@ class TextInput extends GrammarNode {
 // –––––– Grammar ––––––
 
 class Grammar {
-  constructor(opts) {
-    this.name = opts.name;
-    this.startSymbols = opts.startSymbols;
+  constructor({ name, startSymbols }) {
+    this.name = name;
+    this.startSymbols = startSymbols;
   }
 
   literal(text) {
@@ -218,28 +218,30 @@ class Grammar {
   }
 
   optional(...items) {
-    return new Choice(
-      this,
-      this._textSummary(items),
-      [
+    return new Choice({
+      grammar: this,
+      name: this._textSummary(items),
+      choices: [
         items,
         [new Nothing(this)]
       ],
-      "optional nonterminal",
-      true);
+      cssClass: "optional nonterminal",
+      replaceTreeNode: true
+    });
   }
 
   multiple(...items) {
     let repetition = new Repetition(this);
-    let choice = new Choice(
-      this,
-      this._textSummary(items),
-      [
+    let choice = new Choice({
+      grammar: this,
+      name: this._textSummary(items),
+      choices: [
         items.concat(repetition),
         [new Nothing(this)]
       ],
-      "multiple nonterminal",
-      true);
+      cssClass: "multiple nonterminal",
+      replaceTreeNode: true
+    });
     repetition.child = choice;
     return choice;
   }
@@ -257,19 +259,22 @@ class Grammar {
   findSymbol(symbolName) {
     let result = this.productions[symbolName];
     if(Array.isArray(result)) {
-      result = new Choice(this, symbolName, result, "nonterminal");
+      result = new Choice({
+        grammar: this, name: symbolName, choices: result, cssClass: "nonterminal"
+      });
       this.productions[symbolName] = result;
     }
     return result;
   }
 
   show() {
-    let startChooser = new Choice(
-      this,
-      "Choose starting symbol",
-      this.startSymbols.map((sym) => [sym]),
-      "nonterminal",
-      true);
+    let startChooser = new Choice({
+      grammar: this,
+      name: "Choose starting symbol",
+      choices: this.startSymbols.map((sym) => [sym]),
+      cssClass: "nonterminal",
+      replaceTreeNode: true
+    });
 
     let startElem = startChooser.renderWithTreeNode().addClass("start");
     $('.workspace').empty().append(startElem);
