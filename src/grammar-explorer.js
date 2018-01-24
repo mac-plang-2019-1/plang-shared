@@ -18,6 +18,10 @@ class GrammarNode {
     elem.data('tree-node', this.createTreeNode());
     return elem;
   }
+
+  static treeNodeFor(elem) {
+    return elem.data('tree-node');
+  }
 }
 
 
@@ -72,11 +76,12 @@ class Sequence extends GrammarNode {
 }
 
 class Choice extends GrammarNode {
-  constructor(name, choices, cssClass) {
+  constructor(name, choices, cssClass, replaceTreeNode) {
     super();
     this.name = name;
     this.choices = choices.map((choice) => { return new Sequence(choice) });
     this.cssClass = cssClass;
+    this.replaceTreeNode = replaceTreeNode;
   }
 
   render() {
@@ -88,16 +93,23 @@ class Choice extends GrammarNode {
       ...this.choices.map((choice) => {
         return choice.renderSummary()
           .click(() => {
-            let treeParent = $(chooser).data('tree-node');
+            let treeParent = GrammarNode.treeNodeFor($(chooser));
             let replacement = choice.render();
 
             $(chooser).replaceWith(replacement);
 
-            let treeChildren = treeParent.children('.children');
+            let newTreeNodeContainer
+            if(this.replaceTreeNode) {
+              newTreeNodeContainer = elem("div")
+              treeParent.replaceWith(newTreeNodeContainer);
+            } else {
+              newTreeNodeContainer = treeParent.children('.children');
+            }
+
             for(let newChild of replacement) {
-              let childTreeNode = newChild.data('tree-node');
+              let childTreeNode = GrammarNode.treeNodeFor(newChild);
               if(childTreeNode)
-                treeChildren.append(childTreeNode);
+                newTreeNodeContainer.append(childTreeNode);
             }
           });
       }));
@@ -163,7 +175,7 @@ class TextInput extends GrammarNode {
     let elem = super.renderWithTreeNode();
 
     let updateText = (e) => {
-      $(elem).data('tree-node')
+      GrammarNode.treeNodeFor($(elem))
         .find('.value')
         .text($(e.target).val());
     };
@@ -192,7 +204,8 @@ function optional(...items) {
       items,
       [new Nothing()]
     ],
-    "optional nonterminal");
+    "optional nonterminal",
+    true);
 }
 
 function multiple(...items) {
@@ -203,7 +216,8 @@ function multiple(...items) {
       items.concat(repetition),
       [new Nothing()]
     ],
-    "multiple nonterminal");
+    "multiple nonterminal",
+    true);
   repetition.child = choice;
   return choice;
 }
