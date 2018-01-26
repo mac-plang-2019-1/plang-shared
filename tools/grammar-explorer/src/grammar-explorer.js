@@ -51,7 +51,7 @@ class Literal extends GrammarNode {
 class Sequence extends GrammarNode {
   constructor(grammar, children) {
     super(grammar);
-    this.children = children;
+    this.children = Array.isArray(children) ? children : [children];
   }
 
   get resolvedChildren() {
@@ -247,10 +247,21 @@ class Grammar {
     return choice;
   }
 
-  _textSummary(items) {
+  choice(...choices) {  // essentially an anonymous symbol
+    let choice = new Choice({
+      grammar: this,
+      name: "(" + this._textSummary(choices, " | ") + ")",
+      choices: choices.map((x) => [x]),
+      cssClass: "nonterminal",
+      replaceTreeNode: true
+    });
+    return choice;
+  }
+
+  _textSummary(items, separator = " ") {
     return items.map((item) => {
       return item.renderSummary ? item.renderSummary().text() : item;
-    }).join(" ");
+    }).join(separator);
   }
 
   textInput() {
@@ -259,7 +270,11 @@ class Grammar {
 
   findSymbol(symbolName) {
     let result = this.productions[symbolName];
-    if(Array.isArray(result)) {
+
+    if(!result)
+      throw "Symbol not found: " + symbolName;
+
+    if(Array.isArray(result)) {  // lazy resolution allows recursive symbols
       result = new Choice({
         grammar: this, name: symbolName, choices: result, cssClass: "nonterminal"
       });
