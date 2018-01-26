@@ -64,14 +64,12 @@ class Sequence extends GrammarNode {
   }
 
   render() {
-    return this.resolvedChildren.map((child) => {
-      return child.renderWithTreeNode();
-    });
+    return this.resolvedChildren.map((child) => child.renderWithTreeNode());
   }
 
   renderSummary() {
     return elem("div", "substitution",
-      ...this.resolvedChildren.map((child) => { return child.renderSummary() }));
+      ...this.resolvedChildren.map((child) => child.renderSummary()));
   }
 
   insertTreeNodes(treeParent) {
@@ -88,7 +86,7 @@ class Choice extends GrammarNode {
   constructor({ grammar, name, choices, cssClass, replaceTreeNode = false }) {
     super(grammar);
     this.name = name;
-    this.choices = choices.map((choice) => { return new Sequence(this.grammar, choice) });
+    this.choices = choices.map((choice) => new Sequence(this.grammar, choice));
     this.cssClass = cssClass;
     this.replaceTreeNode = replaceTreeNode;
   }
@@ -259,9 +257,9 @@ class Grammar {
   }
 
   _textSummary(items, separator = " ") {
-    return items.map((item) => {
-      return item.renderSummary ? item.renderSummary().text() : item;
-    }).join(separator);
+    return items
+      .map((item) => item.renderSummary ? item.renderSummary().text() : item)
+      .join(separator);
   }
 
   textInput() {
