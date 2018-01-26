@@ -1,10 +1,11 @@
+'use strict';
 (() => {
 
 let g = new Grammar({
   name: "Java",
   docLinks: [
     {
-      name: "Java grammar reference",
+      name: "Grammar reference",
       url: "https://docs.oracle.com/javase/specs/jls/se9/html/jls-19.html"
     }
   ],
@@ -19,9 +20,6 @@ addGrammar(g);
 
 g.productions = {
   Identifier: [
-     ['IdentifierChars']
-  ],
-  IdentifierChars: [
      [g.textInput("identifier", "[A-Za-z_][A-Za-z0-9_]+")]
   ],
 
