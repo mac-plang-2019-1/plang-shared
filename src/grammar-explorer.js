@@ -330,8 +330,11 @@ function startRandomGeneration() {
 
   $('.generate').addClass('in-progress');
 
-  let randomElem = function(elems) {
-    return elems[Math.floor(Math.random() * elems.length)];
+  let randomElem = function(elems, curve = 1) {
+    return elems[
+      Math.floor(
+        Math.pow(Math.random(), curve)
+         * elems.length)];
   }
 
   let generationDelay = 1000;
@@ -339,7 +342,10 @@ function startRandomGeneration() {
     if(!randomGenerationInProgress)
       return;  // user stopped it
 
-    let target = randomElem($('.chooser'));
+    let choosers = $('.chooser');
+    let target = randomElem(
+      choosers,
+      (100.0 + choosers.length) / 100.0);  // increasingly choose the first rule, which tends to terminate sooner
     if(!target){
       stopRandomGeneration();
       return;  // no substitutions left
