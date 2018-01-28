@@ -22,7 +22,26 @@ class GrammarNode {
 
   renderWithTreeNode() {
     let elem = this.render();
-    elem.data('tree-node', this.createTreeNode());
+    let treeNode = this.createTreeNode();
+    elem.data('tree-node', treeNode);
+
+    let activateHighlight = (active) => {
+      $('.workspace-content').toggleClass('tree-hover-active', active);
+      elem.toggleClass('tree-hover', active);
+      elem.next('.replacement').toggleClass('tree-hover', active);
+    };
+
+    treeNode.find('.nonterminal')
+      .hover(
+        () => activateHighlight(true),
+        () => activateHighlight(false))
+      .click(
+        () => {
+          elem.show();
+          elem.next('.replacement').remove();
+          treeNode.find('.children').children().remove();
+        });
+
     return elem;
   }
 
@@ -39,7 +58,7 @@ class Literal extends GrammarNode {
   }
 
   render() {
-    return elem("div", "literal", this.text);
+    return elem("div", "symbol literal", this.text);
   }
 
   renderSummary() {
@@ -68,7 +87,7 @@ class Sequence extends GrammarNode {
   }
 
   renderSummary() {
-    return elem("div", "substitution",
+    return elem("div", "symbol substitution",
       ...this.resolvedChildren.map((child) => child.renderSummary()));
   }
 
@@ -93,7 +112,7 @@ class Choice extends GrammarNode {
 
   render() {
     let header = elem("a", this.cssClass, this.name);
-    let chooser = elem("div", "chooser",
+    let chooser = elem("div", "symbol chooser",
       elem("div", "header", header));
 
     let choices = elem("div", "choices",
@@ -102,12 +121,14 @@ class Choice extends GrammarNode {
           .click(() => {
             let treeParent = GrammarNode.treeNodeFor($(chooser));
             let replacement = choice.render();
+            let replacementContainer = elem('span', 'replacement', ...replacement);
 
-            $(chooser).replaceWith(replacement);
+            replacementContainer.insertAfter(chooser);
+            chooser.hide();
 
-            let newTreeNodeContainer
+            let newTreeNodeContainer;
             if(this.replaceTreeNode) {
-              newTreeNodeContainer = elem("div")
+              newTreeNodeContainer = elem("div");
               treeParent.replaceWith(newTreeNodeContainer);
             } else {
               newTreeNodeContainer = treeParent.children('.children');
@@ -161,7 +182,7 @@ class Nothing extends GrammarNode {
   }
 
   renderSummary() {
-    return elem("div", "nothing", "< nothing >");
+    return elem("div", "symbol nothing", "< nothing >");
   }
 }
 
@@ -178,7 +199,7 @@ class TextInput extends GrammarNode {
   }
 
   renderSummary() {
-    return elem("div", "text-input", elem("div", "caption", this.caption));
+    return elem("div", "symbol text-input", elem("div", "caption", this.caption));
   }
 
   createTreeNode() {
@@ -314,7 +335,7 @@ function addGrammar(grammar) {
   grammars.push(grammar);  
 }
 
-// –––––– Generator ––––––
+// –––––– Random generation ––––––
 
 let randomGenerationInProgress = false;
 
@@ -337,12 +358,12 @@ function startRandomGeneration() {
          * elems.length)];
   }
 
-  let generationDelay = 1000;
+  let generationDelay = 1.000;
   let applyRandomProduction = function() {
     if(!randomGenerationInProgress)
       return;  // user stopped it
 
-    let choosers = $('.chooser');
+    let choosers = $('.chooser:visible');
     let target = randomElem(
       choosers,
       (100.0 + choosers.length) / 100.0);  // increasingly choose the first rule, which tends to terminate sooner

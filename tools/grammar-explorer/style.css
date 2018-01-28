@@ -231,3 +231,22 @@ body {
 .tree-node .nonterminal:after {
     color: rgba(0, 0, 0, 0.5);
 }
+
+.tree-node .nonterminal:hover {
+    background: #ffa;
+}
+
+.replacement {
+    padding-bottom: 1.2em;
+}
+
+.workspace-content.tree-hover-active .symbol {
+    opacity: 0.15;
+    filter: grayscale(50%);
+}
+
+.workspace-content .tree-hover.symbol,
+.workspace-content .tree-hover .symbol {
+    opacity: 1.0;
+    filter: none;
+}
