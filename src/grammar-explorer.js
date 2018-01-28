@@ -145,7 +145,10 @@ class Choice extends GrammarNode {
       elem("div", "choicescontainer",
         choices))
 
-    header.click(() => { choices.toggle() });
+    header.click(() => {
+      choices.toggle();
+      $('.choices').not(choices).hide();
+    });
 
     return chooser;
   }
