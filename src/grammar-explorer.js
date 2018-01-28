@@ -111,9 +111,9 @@ class Choice extends GrammarNode {
   }
 
   render() {
-    let header = elem("a", this.cssClass, this.name);
-    let chooser = elem("div", "symbol chooser",
-      elem("div", "header", header));
+    let header = elem("div", "header",
+      elem("a", this.cssClass, this.name));
+    let chooser = elem("div", "symbol chooser", header);
 
     let choices = elem("div", "choices",
       ...this.choices.map((choice) => {
@@ -308,7 +308,6 @@ class Grammar {
   show() {
     document.title = "Grammar Explorer: " + this.name;
 
-    $('.grammar-title').text(document.title);
     $('.doc-links').empty().append(
       this.docLinks.map((link) =>
         elem("a", "doc-link", link.name).attr('href', link.url)
@@ -329,13 +328,15 @@ class Grammar {
     let treeNode = GrammarNode.treeNodeFor(startElem);
     treeNode.hide();  // Not a real grammar symbol (yet)
     $('.tree-content').empty().append(treeNode);
+
+    startElem.find('.header').click();
   }
 }
 
 let grammars = [];
 
 function addGrammar(grammar) {
-  grammars.push(grammar);  
+  grammars.push(grammar);
 }
 
 // –––––– Random generation ––––––
@@ -361,7 +362,7 @@ function startRandomGeneration() {
          * elems.length)];
   }
 
-  let generationDelay = 1.000;
+  let generationDelay = 1000;
   let applyRandomProduction = function() {
     if(!randomGenerationInProgress)
       return;  // user stopped it
@@ -375,7 +376,6 @@ function startRandomGeneration() {
       return;  // no substitutions left
     }
 
-    target.click();
     randomElem($(target).find('.choices > *')).click();
 
     generationDelay *= 0.9;
@@ -393,7 +393,17 @@ function stopRandomGeneration() {
 // –––––– Page setup & event binding ––––––
 
 $(() => {
-  grammars[0].show();  // could switch this to a drop-down if we ever have multiple grammars
+  let grammarChooser = $('select.grammar-chooser');
+
+  for(let [index, grammar] of grammars.entries()) {
+    grammarChooser.append(
+      new Option(grammar.name, index));
+  }
+
+  let showGrammar = (index) => grammars[index].show();
+  showGrammar(0);
+  grammarChooser.change(
+    () => showGrammar(grammarChooser.val()));
 
   $('.generate').click(toggleRandomGeneration);
 });
