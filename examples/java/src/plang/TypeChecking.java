@@ -1,13 +1,11 @@
 package plang;
 
-import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
 public class TypeChecking {
     public static void main(String[] args) {
-        Duck fred = new Duck();
-        fred.quack();
         Goose sally = new Goose();
         //sally.quack();   // ← Uncomment this and it will not compile. Java catches the type error at compile time.
 
@@ -19,37 +17,87 @@ public class TypeChecking {
 
         // Note that:
         //
-        // - We have to declare a Honkable type with a honk() method
+        // - We have to declare a AlertEmitting type with a honk() method
         //   in order to be able to call it Goose and Car.
         //
-        // - Goose and Car must _explicitly_ declare that they implement Honkable;
+        // - Goose and Car must _explicitly_ declare that they implement AlertEmitting;
         //   it’s not enough that they just happen to have a honk() method.
 
-        List<Honkable> things = Arrays.asList(new Goose(), new Car(), new Goose());
-        for(Honkable thing: things)
-            thing.honk();
+        List<Object> things = Arrays.asList(new Goose(), new Car(), new Duck(), new Goose(), "none of the above");
+
+        System.out.println("------ honks/quacks using interface ––––––");
+        for(Object thing: things)
+            if(thing instanceof AlertEmitting)
+                ((AlertEmitting) thing).emitAlert();
+
+        System.out.println("------ swimming using interface ––––––");
+        for(Object thing: things)
+            if(thing instanceof Aquatic)
+                ((Aquatic) thing).swim();
+
+        // This silly dance is called "reflection."
+        // Java makes it hard by design. Python makes it easy by design.
+
+        System.out.println("------ honks using reflection ––––––");
+        for(Object thing: things) {
+            try {
+                thing.getClass().getMethod("honk").invoke(thing);
+            } catch(NoSuchMethodException e) {
+                // skip
+            } catch(IllegalAccessException | InvocationTargetException e) {
+                // um ... what are we even supposed to do here?
+            }
+        }
+
     }
 }
 
-interface Honkable {
-    void honk();
+interface AlertEmitting {
+    void emitAlert();
 }
 
-class Duck {
+interface Aquatic {
+    void swim();
+}
+
+class Duck implements Aquatic, AlertEmitting {
     public void quack() {
         System.out.println("quack!!");
     }
-}
 
-class Goose implements Honkable {
-    public void honk() {
-        System.out.println("HONK.");
+    public void swim() {
+        System.out.println("happy swim");
+    }
+
+    @Override
+    public void emitAlert() {
+        quack();
     }
 }
 
-class Car implements Honkable {
+class Goose implements AlertEmitting, Aquatic {
+    public void honk() {
+        System.out.println("HONK.");
+    }
+
+    public void swim() {
+        System.out.println("ANGRY SWIM.");
+    }
+
+    @Override
+    public void emitAlert() {
+        honk();
+    }
+}
+
+class Car implements AlertEmitting {
     public void honk() {
         System.out.println("beep beep");
+    }
+
+    @Override
+    public void emitAlert() {
+        honk();
     }
 }
 
