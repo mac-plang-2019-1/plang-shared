@@ -40,12 +40,7 @@ public class PythonObject: Equatable, CustomStringConvertible {
      * result (i.e. mro remembers the list buildMRO() returned and keeps returning it).
      */
     internal func buildMRO() -> [PythonObject] {
-        var result = [PythonObject]()
-        result.append(self)
-        if let mro = type?.mro {
-            result.append(contentsOf: mro)
-        }
-        return result
+        return [self] + (type?.mro ?? [])
     }
 
     /**
@@ -57,8 +52,8 @@ public class PythonObject: Equatable, CustomStringConvertible {
      */
     public final func get(_ attrName: String) throws -> PythonObject? {
         for obj in mro {
-            if obj.attrs.keys.contains(attrName) {
-                return obj.attrs[attrName]!
+            if let value = obj.attrs[attrName] {
+                return value
             }
         }
 

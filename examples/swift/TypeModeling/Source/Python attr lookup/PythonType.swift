@@ -28,12 +28,7 @@ public class PythonType: PythonObject {
     public let base: PythonObject?
 
     internal override func buildMRO() -> [PythonObject] {
-        var result = [PythonObject]()
-        result.append(self)
-        if let mro = base?.mro {
-            result.append(contentsOf: mro)
-        }
-        return result
+        return [self] + (base?.mro ?? [])
     }
 
     /**
