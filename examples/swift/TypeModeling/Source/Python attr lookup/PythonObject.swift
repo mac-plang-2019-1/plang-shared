@@ -5,8 +5,6 @@ import Foundation
  */
 public class PythonObject: Equatable, CustomStringConvertible {
     private var attrs = [String:PythonObject?]()
-    private var mro: [PythonObject]?
-    private let type: PythonType?
 
     public init(_ type: PythonType?) {
         self.type = type
@@ -19,9 +17,7 @@ public class PythonObject: Equatable, CustomStringConvertible {
      * in actual Python, _all_ objects have types, and the type of a class is `type`. That is itself
      * a class, so the type of `type` is `type`. Phew! Thank goodness we’re ignoring that.
      */
-    public func getType() -> PythonType? {
-        return type
-    }
+    public let type: PythonType?
 
     /**
      * Return the list of objects we should search when asked for a given attribute, in the order
@@ -34,21 +30,16 @@ public class PythonObject: Equatable, CustomStringConvertible {
      *
      * Once again, hooray for not having to deal with that.
      */
-    public func getMRO() -> [PythonObject] {
-        if mro == nil {
-            mro = buildMRO()   // TODO: Java was Collections.unmodifiableList(buildMRO())
-        }
-        return mro!
-    }
+    public lazy var mro: [PythonObject] = buildMRO()   //  COW
 
     /**
      * Constructs the MRO. Called only once, the first time we need the MRO; this class memoizes the
-     * result (i.e. getMRO() remembers the list buildMRO() returned and keeps returning it).
+     * result (i.e. mro remembers the list buildMRO() returned and keeps returning it).
      */
     internal func buildMRO() -> [PythonObject] {
         var result = [PythonObject]()
         result.append(self)
-        if let mro = getType()?.getMRO() {
+        if let mro = type?.mro {
             result.append(contentsOf: mro)
         }
         return result
@@ -62,7 +53,7 @@ public class PythonObject: Equatable, CustomStringConvertible {
      * @throws PythonAttributeException When there is no attribute on this object with that name.
      */
     public final func get(_ attrName: String) throws -> PythonObject? {
-        for obj in getMRO() {
+        for obj in mro {
             if obj.attrs.keys.contains(attrName) {
                 return obj.attrs[attrName]!
             }
@@ -84,7 +75,7 @@ public class PythonObject: Equatable, CustomStringConvertible {
     }
 
     public var description: String {
-        return "PythonObject<\(getType()?.getName() ?? "<no type>")>\(attrs)"
+        return "PythonObject<\(type?.name ?? "<no type>")>\(attrs)"
     }
 
     public static func == (_ lhs: PythonObject, _ rhs: PythonObject) -> Bool {
@@ -98,7 +89,7 @@ public struct PythonAttributeException: Error, CustomStringConvertible {
 
     public var description: String {
         return "AttributeError: '"
-            + (object.getType()?.getName() ?? "<untyped>")
+            + (object.type?.name ?? "<untyped>")
             + "' object has no attribute '"
             + attrName
             + "'"

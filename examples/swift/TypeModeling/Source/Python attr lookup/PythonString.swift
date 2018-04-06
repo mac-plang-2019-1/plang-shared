@@ -1,7 +1,7 @@
 import Foundation
 
 public class PythonString: PythonObject {
-    public static let type: PythonType = PythonType("str", nil)
+    public static let type = PythonType(named: "str")
 
     private let value: String
 

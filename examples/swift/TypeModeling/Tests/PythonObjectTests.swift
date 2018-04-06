@@ -29,15 +29,15 @@ class PythonObjectTests: XCTestCase {
      *   bar = Bar()
      */
     override func setUp() {
-        fooType = PythonType("Foo", nil)
-        barType = PythonType("Bar", fooType)
+        fooType = PythonType(named: "Foo")
+        barType = PythonType(named: "Bar", base: fooType)
         foo = fooType.instantiate()
         bar = barType.instantiate()
     }
 
     func testCanCreateAndInstantiateTypes() {
-        XCTAssertTrue(fooType === foo.getType())
-        XCTAssertTrue(barType === bar.getType())
+        XCTAssertTrue(fooType === foo.type)
+        XCTAssertTrue(barType === bar.type)
         XCTAssertFalse(foo === bar)
     }
 
@@ -46,25 +46,25 @@ class PythonObjectTests: XCTestCase {
     func testTypeMroIncludesSelf() {
         XCTAssertEqual(
             [fooType],
-            fooType.getMRO())
+            fooType.mro)
     }
 
     func testTypeMroIncludesBaseClass() {
         XCTAssertEqual(
             [barType, fooType],
-            barType.getMRO())
+            barType.mro)
     }
 
     func testObjectMroIncludesType() {
         XCTAssertEqual(
             [foo, fooType],
-            foo.getMRO())
+            foo.mro)
     }
 
     func testObjectMroIncludesBaseClass() {
         XCTAssertEqual(
             [bar, barType, fooType],
-            bar.getMRO())
+            bar.mro)
     }
 
     // –––––– Attribute lookup tests ––––––
