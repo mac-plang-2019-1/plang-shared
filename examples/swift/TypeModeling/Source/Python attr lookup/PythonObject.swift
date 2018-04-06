@@ -30,7 +30,10 @@ public class PythonObject: Equatable, CustomStringConvertible {
      *
      * Once again, hooray for not having to deal with that.
      */
-    public lazy var mro: [PythonObject] = buildMRO()   //  COW
+    public lazy var mro: [PythonObject] = buildMRO()
+    //                                    ⬆︎
+    // Note that we don’t need Collections.unmodifiableList() as we do in Java:
+    // copy on write prevents others from modifying our MRO.
 
     /**
      * Constructs the MRO. Called only once, the first time we need the MRO; this class memoizes the
