@@ -115,7 +115,9 @@ class Choice extends GrammarNode {
     let choices = elem("div", "choices",
       ...this.choices.map((choice) => {
         return choice.renderSummary()
-          .click(() => {
+          .click((e) => {
+            e.stopPropagation();
+
             let treeParent = GrammarNode.treeNodeFor($(chooser));
             let replacement = choice.render();
             let replacementContainer = elem('span', 'replacement', ...replacement);
@@ -144,7 +146,8 @@ class Choice extends GrammarNode {
       elem("div", "choicescontainer",
         choices))
 
-    header.click(() => {
+    header.click((e) => {
+      e.stopPropagation();
       choices.toggle();
       $('.choices').not(choices).hide();
     });
@@ -405,4 +408,6 @@ $(() => {
     () => showGrammar(grammarChooser.val()));
 
   $('.generate').click(toggleRandomGeneration);
+
+  $('.workspace').click((e) => $('.workspace .choices').hide());
 });
