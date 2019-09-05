@@ -17,6 +17,8 @@ class GrammarNode {
   createTreeNode() {
     return elem("div", "tree-node",
       this.renderSummary(),
+      elem("div", "actions",
+        elem("div", "action remove-children", "remove children").hide()),
       elem("div", "children"));
   }
 
@@ -34,12 +36,15 @@ class GrammarNode {
     treeNode.find('.nonterminal')
       .hover(
         () => activateHighlight(true),
-        () => activateHighlight(false))
+        () => activateHighlight(false));
+
+    treeNode.find('.remove-children')
       .click(
         () => {
           elem.show();
           elem.next('.replacement').remove();
           treeNode.find('.children').children().remove();
+          treeNode.find('.remove-children').hide();
         });
 
     return elem;
@@ -90,14 +95,6 @@ class Sequence extends GrammarNode {
     return elem("div", "symbol substitution",
       ...this.resolvedChildren.map((child) => child.renderSummary()));
   }
-
-  insertTreeNodes(treeParent) {
-    let childContainer = treeParent.children('.children');
-    for(let child of this.resolvedChildren) {
-      childContainer.append(
-        child.createTreeNode());
-    }
-  }
 }
 
 
@@ -139,6 +136,8 @@ class Choice extends GrammarNode {
               if(childTreeNode)
                 newTreeNodeContainer.append(childTreeNode);
             }
+
+            treeParent.children('.actions').find('.remove-children').show();
           });
       }));
     chooser.append(
