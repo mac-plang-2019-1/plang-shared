@@ -84,6 +84,11 @@ select.header-item {
     border-left: 3px solid #ccc;
 }
 
+.tree-content {
+    padding-right: 2em;
+    padding-bottom: 8em;
+}
+
 .nonterminal, .chooser, .literal, .text-input, .nothing {
     padding: 0.2em 0.4em;
     margin: 0.4em 0.2em;
@@ -160,7 +165,6 @@ select.header-item {
 .chooser .choices {
     display: none;
     position: relative;
-    top: 1em;
     left: -0.2em;
     background: rgba(255, 255, 255, 0.9);
     margin: 0.4em;
@@ -169,21 +173,21 @@ select.header-item {
     border: 0.5px solid rgba(0, 0, 0, 0.3);
 }
 
-.chooser .choices:before {
-    content: '↑︎';
-    display: block;
+.chooser .substitution:before {
+    content: '→';
+    display: inline-block;
+    font-family: 'Arial';
+    font-size: 150%;
     position: relative;
-    top: -1.3em;
-    left: 0.25em;
-    font-size: 125%;
-    height: 0;
+    top: 0.3ex;
+    padding: 0 0.5ex;
 }
 
 .start .choices {
     top: -0.6em;
 }
 
-.start .choices:before {
+.start .substitution:before {
     display: none;
 }
 
