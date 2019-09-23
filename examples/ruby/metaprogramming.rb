@@ -226,6 +226,8 @@ return new ResponseBuilder().createRedirect(
 #
 # Java uses names and types as a proxy for semantics.
 # It strives to make _structure_ clear.
+# Strong static typing helps this work out well.
 #
-# Ruby uses metaprogramming and fluent readability as a proxy for semantics.
+# Ruby uses fluent readability as a proxy for semantics.
 # It strives to make _intent_ clear.
+# Metaprogramming helps this work out well.
