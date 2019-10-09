@@ -941,8 +941,8 @@ g.productions = {
      [g.multiple('Annotation'), g.literal('['), 'Expression', g.literal(']')]
   ],
   Expression: [
-     ['LambdaExpression'],
-     ['AssignmentExpression']
+     ['AssignmentExpression'],
+     ['LambdaExpression']
   ],
   LambdaExpression: [
      ['LambdaParameters', g.literal('-&gt;'), 'LambdaBody']
