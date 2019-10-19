@@ -2,6 +2,12 @@ module Mario exposing (..)
 import Playground exposing (..)
 
 
+runSpeed = 2
+coast = 0.9
+jumpPower = 9
+jumpCutoff = 0.8
+gravity = 0.3
+
 -- HISTORY
 
 gameWithTimeTravel rawView rawUpdate rawInitialModel =
@@ -100,16 +106,16 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
 
 main = gameWithTimeTravel view update initialState
 
-main =
-  game view update
-    { x = 0
-    , y = 0
-    , vx = 0
-    , vy = 0
-    , dir = Right
-    , trace = []
-    , gravity = 4.2
-    }
+initialState =
+  { x = 0
+  , y = 0
+  , vx = 0
+  , vy = 0
+  , dir = Right
+  , trace = []
+  }
+
+type XDirection = Left | Right
 
 
 -- VIEW
@@ -176,12 +182,17 @@ update computer mario =
     dt = 2
     vx =
       let keyX = (toX computer.keyboard) in
-        if keyX /= 0 then keyX else (mario.vx * 0.9)
+        if keyX /= 0 then keyX * runSpeed else (mario.vx * coast)
+
+    gravityApplied = mario.vy - dt * gravity
     vy =
       if mario.vy == 0 && computer.keyboard.up then
-        mario.gravity
+        jumpPower
+      else if computer.keyboard.up then
+        gravityApplied
       else
-        mario.vy - dt / 8
+        min jumpCutoff gravityApplied  -- limit speed when up released, to allow var height jumps
+
     newX = mario.x + dt * vx
     newY = max 0 (mario.y + dt * vy)
   in
