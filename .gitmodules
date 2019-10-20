@@ -1,0 +1,3 @@
+[submodule "examples/elm/mario/vendor/miniBill-elm-playground"]
+	path = examples/elm/mario/vendor/miniBill-elm-playground
+	url = https://github.com/miniBill/elm-playground.git
