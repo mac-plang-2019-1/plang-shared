@@ -5,6 +5,7 @@ import TimeTravel exposing (..)
 import Random
 import Time as PosixTime
 
+
 -- PHYSICS PARAMETERS
 
 asteroidCount = 10
@@ -14,6 +15,7 @@ shipSize = 16
 asteroidColor = (rgb 160 160 160)
 shipColor = (rgb 255 200 60)
 bulletColor = white
+
 
 -- MAIN
 
@@ -29,7 +31,6 @@ type alias GameObject =
   , radius : Float
   , shape : List (Float, Float)
   }
-
 
 type alias Model =
   { ship : GameObject
@@ -51,6 +52,7 @@ shipShape =
   , (shipSize * -0.8, shipSize * -0.7)
   ]
 
+
 -- VIEW
 
 view computer model =
@@ -65,6 +67,7 @@ viewGameObject color opacity obj =
     |> fade opacity
     |> rotate obj.dir
     |> move obj.x obj.y
+
 
 -- UPDATE
 
@@ -134,7 +137,6 @@ randomAsteroidShape radius seed0 =
         )
   in
     List.foldl addRandomVertex ([], seed0) (List.range 1 vertexCount)
-
 
 moveObject : Computer -> GameObject -> GameObject
 moveObject computer obj =
