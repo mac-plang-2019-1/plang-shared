@@ -1,6 +1,8 @@
-module TimeTravel exposing (gameWithTimeTravel)
+port module TimeTravel exposing (gameWithTimeTravel)
 
 import Playground exposing (..)
+import Set
+import Time as Posix
 
 type alias TimeTravelModel gameModel =
   { history : List Computer
@@ -45,7 +47,7 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
 
     -- replayEvents sets up the initial state of the game using previously recorded history, if any
 
-    recordHistory computer model =
+    updateWithHistory userMsg computer model =
       let
         xToHistoryIndex x =
           (x - computer.screen.left)
@@ -59,43 +61,104 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
             newPlaybackPosition =
               min (List.length model.history) (xToHistoryIndex computer.mouse.x)
           in
-            { model
-              | paused = True
-              , rawModel = replayEvents (List.take newPlaybackPosition model.history)
-              , historyPlaybackPosition = newPlaybackPosition
-            }
+            ( { model
+                | paused = True
+                , rawModel = replayEvents (List.take newPlaybackPosition model.history)
+                , historyPlaybackPosition = newPlaybackPosition
+              }
+            , encodeAndSaveHistory model
+            )
 
         -- Resume normal flow of time
 
         else if model.paused && computer.keyboard.space then
-          { model
-            | paused = False
-            , history = List.take model.historyPlaybackPosition model.history  -- start at selected point...
-            , historyPlaybackPosition = 0  -- ...and remove selection
-          }
+          ( { model
+              | paused = False
+              , history = List.take model.historyPlaybackPosition model.history  -- start at selected point...
+              , historyPlaybackPosition = 0  -- ...and remove selection
+            }
+          , encodeAndSaveHistory model
+          )
 
         -- Paused and doing nothing
 
         else if model.paused then
-          model
+          (model, Cmd.none)
 
         -- Normal gameplay
 
         else
-          { model
-            | rawModel = rawUpdate computer model.rawModel
-            , history = model.history ++ [computer]
-            , paused = False
-          }
+          ( { model
+              | rawModel = rawUpdate computer model.rawModel
+              , history = model.history ++ [computer]
+              , paused = False
+            }
+          , Cmd.none)
 
-    -- replayRecordedHistory sets up the initial state of the game using previously recorded history
+    -- initWithHistory sets up the initial state of the game using previously recorded history
     -- if there is any, otherwise starts the game in its normal initial state
 
-    replayRecordedHistory =
+    initWithHistory =
       { rawModel = rawInitialModel
       , history = []
       , historyPlaybackPosition = 0
       , paused = False
       }
+
+    subscriptions =
+      always Sub.none
   in
-    game viewWithHistory recordHistory replayRecordedHistory
+    application viewWithHistory updateWithHistory subscriptions initWithHistory
+
+
+-- Saving computer state
+
+port saveHistory : List EncodableComputer -> Cmd msg
+
+encodeAndSaveHistory model =
+  saveHistory (List.map encodeComputer model.history)
+
+type alias EncodableKeyboard =
+  { up : Bool
+  , down : Bool
+  , left : Bool
+  , right : Bool
+  , space : Bool
+  , enter : Bool
+  , shift : Bool
+  , backspace : Bool
+  , keys : List String
+  }
+
+type alias EncodableTime = Int
+
+type alias EncodableComputer =
+  { mouse : Mouse
+  , keyboard : EncodableKeyboard
+  , screen : Screen
+  , time : EncodableTime
+  }
+
+encodeComputer : Computer -> EncodableComputer
+encodeComputer computer =
+  { mouse = computer.mouse
+  , keyboard = encodeKeyboard computer.keyboard
+  , screen = computer.screen
+  , time = encodeTime computer.time
+  }
+
+encodeKeyboard : Keyboard -> EncodableKeyboard
+encodeKeyboard keyboard =
+  { up = keyboard.up
+  , down = keyboard.down
+  , left = keyboard.left
+  , right = keyboard.right
+  , space = keyboard.space
+  , enter = keyboard.enter
+  , shift = keyboard.shift
+  , backspace = keyboard.backspace
+  , keys = Set.toList keyboard.keys }
+
+encodeTime : Time -> Int
+encodeTime time = Posix.posixToMillis (extractPosix time)
+

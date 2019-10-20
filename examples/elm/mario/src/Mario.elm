@@ -38,19 +38,19 @@ view computer mario =
     b = computer.screen.bottom
     convertY y = (b + 76 + y)
   in
-  [ rectangle (rgb 174 238 238) w h  -- sky
-  , rectangle (rgb 74 163 41) w 100  -- ground
-      |> moveY b
-  , mario.trace
-      |> List.map flipY  -- polygon uses flipped Y, apparently?!?
-      |> pathToPolygonVertices 1.5
-      |> polygon black
-      |> move 0 (b + 76)
-      |> fade 0.5
-  , marioSprite mario
-      |> image 70 70
-      |> move mario.x (b + 76 + mario.y)
-  ]
+    [ rectangle (rgb 174 238 238) w h  -- sky
+    , rectangle (rgb 74 163 41) w 100  -- ground
+        |> moveY b
+    , mario.trace
+        |> List.map flipY  -- polygon uses flipped Y, apparently?!?
+        |> pathToPolygonVertices 1.5
+        |> polygon black
+        |> move 0 (b + 76)
+        |> fade 0.5
+    , marioSprite mario
+        |> image 70 70
+        |> move mario.x (b + 76 + mario.y)
+    ]
 
 -- Elm’s playground package doesn't have any way to stroke a path.
 -- This function makes a polygon that traces across the given points
