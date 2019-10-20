@@ -113,9 +113,12 @@ update computer mario =
       , vx = vx
       , vy = (newY - mario.y) / dt
       , dir =
-          if vx == 0 then
+          if (toX computer.keyboard) < 0 then
+            Left
+          else if (toX computer.keyboard) > 0 then
+            Right
+          else
             mario.dir  -- face direction of last movement when standing still
-          else if vx < 0 then Left else Right
       , trace = addPointUnlessDuplicate (newX, newY) mario.trace
     }
 
