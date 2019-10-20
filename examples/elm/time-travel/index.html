@@ -17,15 +17,17 @@
 </body>
 
 <script type="text/javascript">
-for (var module in Elm) {
-    let storageKey = module + '-history';
-    let storedState = sessionStorage.getItem(storageKey);
-    let startingState = storedState ? JSON.parse(storedState) : null;
-    let app = Elm[module].init({ flags: startingState });
-    app.ports.saveHistory.subscribe((state) => {
-        sessionStorage.setItem(storageKey, JSON.stringify(state));
-    });
-}
+
+let elmModule = 'Asteroids';
+
+let storageKey = 'time-travel-history';
+let storedState = sessionStorage.getItem(storageKey);
+let startingState = storedState ? JSON.parse(storedState) : null;
+let app = Elm[elmModule].init({ flags: startingState });
+app.ports.saveHistory.subscribe((state) => {
+    sessionStorage.setItem(storageKey, JSON.stringify(state));
+});  
+
 </script>
 
 </html>
