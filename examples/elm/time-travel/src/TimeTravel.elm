@@ -34,14 +34,14 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
               |> fade 0.7
         helpMessage =
             if model.paused then
-              "Press space to resume at selected point in history"
+              "Drag bar to time travel  •  Press T to resume"
             else
-              "Drag across bar to time travel"
+              "Press T to freeze time and save history"
       in
         (rawView computer model.rawModel) ++
           [ historyBar black maxVisibleHistory
-          , historyBar blue (List.length model.history)
-          , historyBar white model.historyPlaybackPosition
+          , historyBar (rgb 0 0 255) (List.length model.history)
+          , historyBar (rgb 128 64 255) model.historyPlaybackPosition
           , words white helpMessage
               |> move 0 (computer.screen.top - historyBarHeight / 2)
           ]
@@ -57,27 +57,28 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
       in
         -- Pause game & travel in time
 
-        if computer.mouse.down && (model.paused || computer.mouse.y > computer.screen.top - historyBarHeight) then
+        if model.paused && computer.mouse.down && computer.mouse.y > computer.screen.top - historyBarHeight then
           let
             newPlaybackPosition =
               min (List.length model.history) (xToHistoryIndex computer.mouse.x)
           in
             ( { model
-                | paused = True
-                , rawModel = replayHistory (List.take newPlaybackPosition model.history)
+                | rawModel = replayHistory (List.take newPlaybackPosition model.history)
                 , historyPlaybackPosition = newPlaybackPosition
               }
-            , encodeAndSaveHistory model
+            , Cmd.none
             )
 
-        -- Resume normal flow of time
+        -- Toggling pause mode
 
-        else if model.paused && computer.keyboard.space then
-          ( { model
-              | paused = False
-              , history = List.take model.historyPlaybackPosition model.history  -- start at selected point...
-              , historyPlaybackPosition = 0  -- ...and remove selection
-            }
+        else if List.any (\key -> Set.member key computer.keyboard.keysJustPressed) ["t", "T"] then
+          ( if model.paused then
+              { model
+                | paused = False
+                , history = List.take model.historyPlaybackPosition model.history  -- start at selected point...
+              }
+            else
+              { model | paused = True}
           , encodeAndSaveHistory model
           )
 
@@ -92,6 +93,7 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
           ( { model
               | rawModel = rawUpdate computer model.rawModel
               , history = model.history ++ [computer]
+              , historyPlaybackPosition = (List.length model.history + 1)
               , paused = False
             }
           , Cmd.none)
@@ -106,7 +108,7 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
       in
         { rawModel = replayHistory recoveredHistory
         , history = recoveredHistory
-        , historyPlaybackPosition = 0
+        , historyPlaybackPosition = List.length recoveredHistory
         , paused = not (List.isEmpty recoveredHistory)
         }
 
@@ -156,6 +158,7 @@ type alias EncodableKeyboard =
   , shift : Bool
   , backspace : Bool
   , keys : List String
+  , keysJustPressed : List String
   }
 
 encodeKeyboard : Keyboard -> EncodableKeyboard
@@ -168,7 +171,8 @@ encodeKeyboard keyboard =
   , enter = keyboard.enter
   , shift = keyboard.shift
   , backspace = keyboard.backspace
-  , keys = Set.toList keyboard.keys }
+  , keys = Set.toList keyboard.keys
+  , keysJustPressed = Set.toList keyboard.keysJustPressed }
 
 decodeKeyboard : EncodableKeyboard -> Keyboard
 decodeKeyboard keyboard =
@@ -180,7 +184,8 @@ decodeKeyboard keyboard =
   , enter = keyboard.enter
   , shift = keyboard.shift
   , backspace = keyboard.backspace
-  , keys = Set.fromList keyboard.keys }
+  , keys = Set.fromList keyboard.keys
+  , keysJustPressed = Set.fromList keyboard.keysJustPressed }
 
 type alias EncodableTime = Int
 

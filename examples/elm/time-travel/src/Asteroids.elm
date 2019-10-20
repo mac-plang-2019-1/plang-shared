@@ -79,7 +79,7 @@ shipControls : Computer -> GameObject -> GameObject
 shipControls computer ship =
   let
     thrust = 0.1 * toY computer.keyboard
-    dir = Debug.log "dir" (degrees ship.dir)
+    dir = degrees ship.dir
   in
     { ship
       | spin = -5 * toX computer.keyboard

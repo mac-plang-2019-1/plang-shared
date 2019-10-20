@@ -282,6 +282,7 @@ type alias Keyboard =
     , shift : Bool
     , backspace : Bool
     , keys : Set.Set String
+    , keysJustPressed : Set.Set String
     }
 
 
@@ -877,47 +878,56 @@ emptyKeyboard =
     , shift = False
     , backspace = False
     , keys = Set.empty
+    , keysJustPressed = Set.empty
     }
 
 
 updateKeyboard : Bool -> String -> Keyboard -> Keyboard
 updateKeyboard isDown key keyboard =
     let
-        keys =
-            if isDown then
-                Set.insert key keyboard.keys
+        newKeyboard =
+            { keyboard
+                | keys =
+                    if isDown then
+                        Set.insert key keyboard.keys
 
-            else
-                Set.remove key keyboard.keys
+                    else
+                        Set.remove key keyboard.keys
+
+                , keysJustPressed =
+                    if isDown then
+                        Set.insert key keyboard.keysJustPressed |> Debug.log "inserting key just pressed"
+                    else
+                        keyboard.keysJustPressed
+            }
     in
     case key of
         " " ->
-            { keyboard | keys = keys, space = isDown }
+            { newKeyboard | space = isDown }
 
         "Enter" ->
-            { keyboard | keys = keys, enter = isDown }
+            { newKeyboard | enter = isDown }
 
         "Shift" ->
-            { keyboard | keys = keys, shift = isDown }
+            { newKeyboard | shift = isDown }
 
         "Backspace" ->
-            { keyboard | keys = keys, backspace = isDown }
+            { newKeyboard | backspace = isDown }
 
         "ArrowUp" ->
-            { keyboard | keys = keys, up = isDown }
+            { newKeyboard | up = isDown }
 
         "ArrowDown" ->
-            { keyboard | keys = keys, down = isDown }
+            { newKeyboard | down = isDown }
 
         "ArrowLeft" ->
-            { keyboard | keys = keys, left = isDown }
+            { newKeyboard | left = isDown }
 
         "ArrowRight" ->
-            { keyboard | keys = keys, right = isDown }
+            { newKeyboard | right = isDown }
 
         _ ->
-            { keyboard | keys = keys }
-
+            newKeyboard
 
 
 -- APPLICATION
@@ -1022,6 +1032,24 @@ type ExternalMsg msg
     | External msg
 
 
+updateTime time computer =
+    { computer | time = Time time }
+
+clearMouseClick computer =
+    if computer.mouse.click then
+        { computer | mouse = mouseClick False computer.mouse }
+    else
+        computer
+
+clearKeysJustPressed : Computer -> Computer
+clearKeysJustPressed computer =
+    let
+        keysJustPressed newValue keyboard = 
+            { keyboard | keysJustPressed = newValue }
+    in
+        { computer | keyboard = keysJustPressed Set.empty computer.keyboard }
+
+
 applicationUpdate : (UserMsg msg -> Computer -> memory -> ( memory, Cmd msg )) -> ExternalMsg msg -> Game memory -> ( Game memory, Cmd (ExternalMsg msg) )
 applicationUpdate updateMemory msg (Game vis memory computer) =
     case msg of
@@ -1038,12 +1066,7 @@ applicationUpdate updateMemory msg (Game vis memory computer) =
                     updateMemory Frame computer memory
 
                 newGame =
-                    Game vis newMemory <|
-                        if computer.mouse.click then
-                            { computer | time = Time time, mouse = mouseClick False computer.mouse }
-
-                        else
-                            { computer | time = Time time }
+                    Game vis newMemory (computer |> updateTime time |> clearMouseClick |> clearKeysJustPressed)
             in
             ( newGame, Cmd.map External cmd )
 
