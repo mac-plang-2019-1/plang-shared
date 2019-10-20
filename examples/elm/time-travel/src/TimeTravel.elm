@@ -34,7 +34,7 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
               |> fade 0.7
         helpMessage =
             if model.paused then
-              "Drag bar to time travel  •  Press T to resume"
+              "Drag bar to time travel  •  Press T to resume  •  Press C to clear history & restart"
             else
               "Press T to freeze time and save history"
       in
@@ -79,6 +79,18 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
               }
             else
               { model | paused = True}
+          , encodeAndSaveHistory model
+          )
+
+        -- Clear history & restart
+
+        else if model.paused && List.any (\key -> Set.member key computer.keyboard.keysJustPressed) ["c", "C"] then
+          ( { model
+              | paused = False
+              , rawModel = rawInitialModel
+              , history = []
+              , historyPlaybackPosition = 0
+            }
           , encodeAndSaveHistory model
           )
 
