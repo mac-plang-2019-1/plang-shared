@@ -17,7 +17,7 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
     historySize model = List.length model.history
     historyBarHeight = 64
 
-    replayEvents events =
+    replayHistory events =
       List.foldl rawUpdate rawInitialModel events
 
     -- viewWithHistory adds a time travel bar + help message to the game’s normal UI
@@ -45,7 +45,7 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
               |> move 0 (computer.screen.top - historyBarHeight - 20)
           ]
 
-    -- replayEvents sets up the initial state of the game using previously recorded history, if any
+    -- replayHistory sets up the initial state of the game using previously recorded history, if any
 
     updateWithHistory userMsg computer model =
       let
@@ -63,7 +63,7 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
           in
             ( { model
                 | paused = True
-                , rawModel = replayEvents (List.take newPlaybackPosition model.history)
+                , rawModel = replayHistory (List.take newPlaybackPosition model.history)
                 , historyPlaybackPosition = newPlaybackPosition
               }
             , encodeAndSaveHistory model
@@ -98,12 +98,16 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
     -- initWithHistory sets up the initial state of the game using previously recorded history
     -- if there is any, otherwise starts the game in its normal initial state
 
-    initWithHistory =
-      { rawModel = rawInitialModel
-      , history = []
-      , historyPlaybackPosition = 0
-      , paused = False
-      }
+    initWithHistory savedHistory =
+      let
+        recoveredHistory =
+          List.map decodeComputer (Maybe.withDefault [] savedHistory)
+      in
+        { rawModel = replayHistory recoveredHistory
+        , history = recoveredHistory
+        , historyPlaybackPosition = 0
+        , paused = not (List.isEmpty recoveredHistory)
+        }
 
     subscriptions =
       always Sub.none
@@ -111,26 +115,12 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
     application viewWithHistory updateWithHistory subscriptions initWithHistory
 
 
--- Saving computer state
+-- Making Computer storage-friendly
 
 port saveHistory : List EncodableComputer -> Cmd msg
 
 encodeAndSaveHistory model =
   saveHistory (List.map encodeComputer model.history)
-
-type alias EncodableKeyboard =
-  { up : Bool
-  , down : Bool
-  , left : Bool
-  , right : Bool
-  , space : Bool
-  , enter : Bool
-  , shift : Bool
-  , backspace : Bool
-  , keys : List String
-  }
-
-type alias EncodableTime = Int
 
 type alias EncodableComputer =
   { mouse : Mouse
@@ -147,6 +137,26 @@ encodeComputer computer =
   , time = encodeTime computer.time
   }
 
+decodeComputer : EncodableComputer -> Computer
+decodeComputer computer =
+  { mouse = computer.mouse
+  , keyboard = decodeKeyboard computer.keyboard
+  , screen = computer.screen
+  , time = decodeTime computer.time
+  }
+
+type alias EncodableKeyboard =
+  { up : Bool
+  , down : Bool
+  , left : Bool
+  , right : Bool
+  , space : Bool
+  , enter : Bool
+  , shift : Bool
+  , backspace : Bool
+  , keys : List String
+  }
+
 encodeKeyboard : Keyboard -> EncodableKeyboard
 encodeKeyboard keyboard =
   { up = keyboard.up
@@ -159,6 +169,22 @@ encodeKeyboard keyboard =
   , backspace = keyboard.backspace
   , keys = Set.toList keyboard.keys }
 
-encodeTime : Time -> Int
+decodeKeyboard : EncodableKeyboard -> Keyboard
+decodeKeyboard keyboard =
+  { up = keyboard.up
+  , down = keyboard.down
+  , left = keyboard.left
+  , right = keyboard.right
+  , space = keyboard.space
+  , enter = keyboard.enter
+  , shift = keyboard.shift
+  , backspace = keyboard.backspace
+  , keys = Set.fromList keyboard.keys }
+
+type alias EncodableTime = Int
+
+encodeTime : Time -> EncodableTime
 encodeTime time = Posix.posixToMillis (extractPosix time)
 
+decodeTime : EncodableTime -> Time
+decodeTime time = makePlaygroundTime (Posix.millisToPosix time)
