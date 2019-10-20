@@ -3,6 +3,7 @@ module Asteroids exposing (..)
 import Playground exposing (..)
 import TimeTravel exposing (..)
 import Random
+import Set
 import Time as PosixTime
 
 
@@ -12,10 +13,11 @@ asteroidCount = 10
 initialAsteroidSpeed = 2
 largeAsteroidRadius = 30
 shipSize = 16
+bulletSpeed = 5
 asteroidColor = (rgb 160 160 160)
-shipColor = (rgb 255 200 60)
-bulletColor = white
-
+shipColor = (rgb 255 120 60)
+bulletColor = yellow
+bulletRadius = 2
 
 -- MAIN
 
@@ -52,6 +54,12 @@ shipShape =
   , (shipSize * -0.8, shipSize * -0.7)
   ]
 
+bulletShape =
+  [ (-bulletRadius, 0)
+  , (0, bulletRadius)
+  , (bulletRadius, 0)
+  , (0, -bulletRadius)
+  ]
 
 -- VIEW
 
@@ -72,6 +80,34 @@ viewGameObject color opacity obj =
 -- UPDATE
 
 update computer model =
+  model
+    |> shoot computer
+    |> handleMotion computer
+
+shoot computer model =
+  if Set.member " " computer.keyboard.keysJustPressed then
+    let
+      shipHeadingX = cos (degrees model.ship.dir)
+      shipHeadingY = sin (degrees model.ship.dir)
+    in
+      { model
+        | bullets = model.bullets ++
+          [
+            { x = model.ship.x + shipSize * shipHeadingX
+            , y = model.ship.y + shipSize * shipHeadingY
+            , dx = model.ship.dx + shipHeadingX * bulletSpeed
+            , dy = model.ship.dx + shipHeadingY * bulletSpeed
+            , dir = 0
+            , spin = 0
+            , radius = bulletRadius
+            , shape = bulletShape
+            }
+          ]
+      }
+  else
+    model
+
+handleMotion computer model =
   { model
     | ship      = (shipControls computer >> moveObject computer) model.ship
     , asteroids = List.map (moveObject computer) model.asteroids |> regenerateIfEmpty computer
