@@ -2,7 +2,7 @@ port module TimeTravel exposing (gameWithTimeTravel)
 
 import Playground exposing (..)
 import Set
-import Time as Posix
+import Time as PosixTime
 
 type alias TimeTravelModel gameModel =
   { history : List Computer
@@ -39,10 +39,11 @@ gameWithTimeTravel rawView rawUpdate rawInitialModel =
               "Drag across bar to time travel"
       in
         (rawView computer model.rawModel) ++
-          [ historyBar black (List.length model.history)
+          [ historyBar black maxVisibleHistory
+          , historyBar blue (List.length model.history)
           , historyBar white model.historyPlaybackPosition
-          , words black helpMessage
-              |> move 0 (computer.screen.top - historyBarHeight - 20)
+          , words white helpMessage
+              |> move 0 (computer.screen.top - historyBarHeight / 2)
           ]
 
     -- replayHistory sets up the initial state of the game using previously recorded history, if any
@@ -184,7 +185,7 @@ decodeKeyboard keyboard =
 type alias EncodableTime = Int
 
 encodeTime : Time -> EncodableTime
-encodeTime time = Posix.posixToMillis (extractPosix time)
+encodeTime time = PosixTime.posixToMillis (extractPosix time)
 
 decodeTime : EncodableTime -> Time
-decodeTime time = makePlaygroundTime (Posix.millisToPosix time)
+decodeTime time = makePlaygroundTime (PosixTime.millisToPosix time)
