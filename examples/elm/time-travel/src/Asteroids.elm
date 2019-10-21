@@ -12,6 +12,8 @@ import Time as PosixTime
 asteroidCount = 10
 initialAsteroidSpeed = 2
 largeAsteroidRadius = 30
+minAsteroidRadius = 6
+asteroidComplexity = 0.4
 shipSize = 16
 bulletSpeed = 5
 asteroidColor = (rgb 160 160 160)
@@ -83,6 +85,7 @@ update computer model =
   model
     |> shoot computer
     |> handleMotion computer
+    |> checkBulletCollisions
 
 shoot computer model =
   if Set.member " " computer.keyboard.keysJustPressed then
@@ -126,41 +129,89 @@ shipControls computer ship =
       , dy = ship.dy + thrust * (sin (degrees ship.dir))
     }
 
+checkBulletCollisions model =
+  let
+    (hitBullets,   freeBullets  ) = findCollided model.bullets model.asteroids
+    (hitAsteroids, freeAsteroids) = findCollided model.asteroids model.bullets
+  in
+    { model
+      | bullets = freeBullets
+      , asteroids = freeAsteroids
+          ++ splitAsteroids hitAsteroids
+    }
+
+findCollided shapes otherShapes =
+  List.partition (anyCollide otherShapes) shapes
+
+objectsCollide obj0 obj1 =
+  (hypot (obj0.x - obj1.x) (obj0.y - obj1.y)) <= obj0.radius + obj1.radius
+
+anyCollide otherShapes shape =
+  List.any (objectsCollide shape) otherShapes
+
+splitAsteroids bigAsteroids =
+  let
+    split asteroid =
+      if asteroid.radius < minAsteroidRadius * 2 then
+        []
+      else
+        [ halfOf asteroid 0
+        , halfOf asteroid 1
+        ]
+  in
+    List.concatMap split bigAsteroids
+
+halfOf asteroid whichHalf =
+  let
+    (r, θ) = toPolar (asteroid.dx, asteroid.dy)
+    (newdx, newdy) = fromPolar (r, θ + 1.7 * ((toFloat whichHalf) - 0.5))
+  in
+    { asteroid
+      | radius = asteroid.radius / (sqrt 2)
+      , dx = newdx
+      , dy = newdy
+      , shape = eliminateSome 0.3 whichHalf asteroid.shape |> List.map (scalePoint (1 / sqrt 2))
+    }
+
+
 regenerateIfEmpty : Computer -> List GameObject -> List GameObject
 regenerateIfEmpty computer asteroids =
-  if not (List.isEmpty asteroids) then
-    asteroids
+  if List.isEmpty asteroids then
+    generateAsteroids computer
   else
-    let
-      randomX = Random.float computer.screen.left computer.screen.right
-      randomY = Random.float computer.screen.bottom computer.screen.top
-      randomAngle = Random.float 0 (2 * pi)
+    asteroids
 
-      addRandomAsteroid index (list, seed0) =
-        let
-          (x, seed1) = Random.step randomX seed0
-          (y, seed2) = Random.step randomY seed1
-          (dir, seed3) = Random.step randomAngle seed2
-          (spin, seed4) = Random.step randomAngle seed3
-          (shape, seed5) = randomAsteroidShape largeAsteroidRadius seed4
+generateAsteroids computer =
+  let
+    randomX = Random.float computer.screen.left computer.screen.right
+    randomY = Random.float computer.screen.bottom computer.screen.top
+    randomAngle = Random.float 0 (2 * pi)
 
-          (dx, dy) = (initialAsteroidSpeed * cos(dir), initialAsteroidSpeed * sin(dir))
-        in
-          ( { x = x, y = y, dir = 0, spin = spin, dx = dx, dy = dy, radius = largeAsteroidRadius, shape = shape} :: list
-          , seed5
-          )
+    addRandomAsteroid index (list, seed0) =
+      let
+        (x, seed1) = Random.step randomX seed0
+        (y, seed2) = Random.step randomY seed1
+        (dir, seed3) = Random.step randomAngle seed2
+        (spin, seed4) = Random.step randomAngle seed3
+        (shape, seed5) = randomAsteroidShape largeAsteroidRadius seed4
 
-      initialSeed = Random.initialSeed (PosixTime.posixToMillis (extractPosix computer.time))
+        (dx, dy) = (initialAsteroidSpeed * cos(dir), initialAsteroidSpeed * sin(dir))
+      in
+        ( { x = x, y = y, dir = 0, spin = spin, dx = dx, dy = dy, radius = largeAsteroidRadius, shape = shape} :: list
+        , seed5
+        )
 
-      (result, lastSeed) = List.foldl addRandomAsteroid ([], initialSeed) (List.range 1 asteroidCount)
-    in
-      result
+    initialSeed = Random.initialSeed (PosixTime.posixToMillis (extractPosix computer.time))
+
+    (result, lastSeed) = List.foldl addRandomAsteroid ([], initialSeed) (List.range 1 asteroidCount)
+  in
+    result
 
 randomAsteroidShape : Number -> Random.Seed -> (List (Float, Float), Random.Seed)
 randomAsteroidShape radius seed0 =
   let
-    randomRadius = Random.float (radius * 0.9) (radius * 1.5)
-    vertexCount = 3 + round (radius / 3)
+    randomRadius = Random.float radius (radius * 1.6)
+    vertexCount = 3 + round (radius * asteroidComplexity)
     addRandomVertex index (list, seed1) =
       let
         (r, seed2) = (Random.step randomRadius seed1)
@@ -182,6 +233,8 @@ moveObject computer obj =
     , dir = obj.dir + obj.spin
   }
 
+-- Helpers
+
 wrap min max x =
   let
     diff = max - min
@@ -194,3 +247,22 @@ wrap min max x =
       x + diff
     else
       x
+
+hypot x y =  -- mysteriously, Elm doesn't have this built in
+  toPolar (x, y) |> Tuple.first
+
+scalePoint scale (x,y) =
+  (x * scale, y * scale)
+
+eliminateSome : Float -> Int -> List a -> List a
+eliminateSome fractionToRemove offset list =
+  let
+    ditherFilter elem (accum, error) =
+      let newError = error + fractionToRemove in
+        if newError >= 1 then
+          (accum, newError - 1)
+        else
+          (elem :: accum, newError)
+  in
+    List.foldr ditherFilter ([], (toFloat offset) * fractionToRemove) list
+      |> Tuple.first

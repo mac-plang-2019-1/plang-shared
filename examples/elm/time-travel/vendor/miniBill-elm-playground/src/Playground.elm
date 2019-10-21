@@ -896,7 +896,7 @@ updateKeyboard isDown key keyboard =
 
                 , keysJustPressed =
                     if isDown then
-                        Set.insert key keyboard.keysJustPressed |> Debug.log "inserting key just pressed"
+                        Set.insert key keyboard.keysJustPressed
                     else
                         keyboard.keysJustPressed
             }
